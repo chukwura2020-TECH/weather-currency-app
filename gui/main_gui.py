@@ -1,12 +1,16 @@
 # gui/main_gui.py
 """
-Main application window with sidebar and weather content.
+Main application window - complete dashboard.
 """
 import tkinter as tk
-from gui.styles.theme import COLORS, DIMENSIONS, FONTS  # ← Added FONTS here
+from gui.styles.theme import COLORS, DIMENSIONS, FONTS
 from gui.components.sidebar import Sidebar
 from gui.components.search_bar import SearchBar
 from gui.components.weather_card import CurrentWeatherCard
+from gui.map_gui import MapPlaceholder
+from gui.components.popular_cities import PopularCities
+from gui.components.forecast import ForecastPanel
+from gui.components.summary_chart import SummaryChart
 
 class WeatherApp:
     def __init__(self, root):
@@ -24,30 +28,66 @@ class WeatherApp:
         self._create_layout()
     
     def _create_layout(self):
-        """Create the main layout with sidebar and content area"""
+        """Create the complete dashboard layout"""
         
         # LEFT: Sidebar
         self.sidebar = Sidebar(self.root)
         self.sidebar.pack(side="left", fill="y")
         
-        # RIGHT: Main content area
+        # RIGHT: Main content area with scrolling
         self.content_frame = tk.Frame(self.root, bg=COLORS['bg_primary'])
         self.content_frame.pack(side="right", fill="both", expand=True)
         
-        # Search bar at the top
-        self.search_bar = SearchBar(self.content_frame)
+        # Create canvas for scrolling
+        canvas = tk.Canvas(self.content_frame, bg=COLORS['bg_primary'], highlightthickness=0)
+        scrollbar = tk.Scrollbar(self.content_frame, orient="vertical", command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas, bg=COLORS['bg_primary'])
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+        
+        # Add all components
+        
+        # Search bar
+        self.search_bar = SearchBar(scrollable_frame)
         self.search_bar.pack(fill="x")
         
         # Current Weather Card
-        self.weather_card = CurrentWeatherCard(self.content_frame)
+        self.weather_card = CurrentWeatherCard(scrollable_frame)
         self.weather_card.pack(fill="x", padx=20, pady=(0, 20))
         
-        # Placeholder for more content below
-        placeholder = tk.Label(
-            self.content_frame,
-            text="More content coming in Phase 5...",
-            bg=COLORS['bg_primary'],
-            fg=COLORS['text_white'],
-            font=FONTS['body']  # ← Now FONTS is imported, so this works!
-        )
-        placeholder.pack(pady=50)
+        # Two-column layout
+        columns = tk.Frame(scrollable_frame, bg=COLORS['bg_primary'])
+        columns.pack(fill="both", expand=True, padx=20)
+        
+        # LEFT COLUMN
+        left_col = tk.Frame(columns, bg=COLORS['bg_primary'])
+        left_col.pack(side="left", fill="both", expand=True, padx=(0, 10))
+        
+        # Map
+        self.map = MapPlaceholder(left_col)
+        self.map.pack(fill="x", pady=(0, 20))
+        
+        # Summary Chart
+        self.chart = SummaryChart(left_col)
+        self.chart.pack(fill="x")
+        
+        # RIGHT COLUMN
+        right_col = tk.Frame(columns, bg=COLORS['bg_primary'])
+        right_col.pack(side="right", fill="both", padx=(10, 0))
+        
+        # Popular Cities
+        self.cities = PopularCities(right_col)
+        self.cities.pack(fill="x", pady=(0, 20))
+        
+        # Forecast
+        self.forecast = ForecastPanel(right_col)
+        self.forecast.pack(fill="both", expand=True)
