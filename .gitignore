@@ -3,3 +3,7 @@ __pycache__/
 *.pyo
 weacur/
 config.py
+*.exe
+*spec
+build/
+dist/
