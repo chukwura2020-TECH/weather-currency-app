@@ -2,10 +2,7 @@ __pycache__/
 *.pyc
 *.pyo
 weacur/
-config.py
 *.exe
 *spec
 build/
 dist/
-__pycache__/
-*.pyc
