@@ -57,11 +57,13 @@ class WeatherApp:
         # Add all components
         
         # Search bar
-        self.search_bar = SearchBar(scrollable_frame)
+        # Search bar at the top (with callback)
+        self.search_bar = SearchBar(scrollable_frame, self.on_search)
         self.search_bar.pack(fill="x")
         
         # Current Weather Card
-        self.weather_card = CurrentWeatherCard(scrollable_frame)
+        # Current Weather Card (with default city)
+        self.weather_card = CurrentWeatherCard(scrollable_frame, city="London")
         self.weather_card.pack(fill="x", padx=20, pady=(0, 20))
         
         # Two-column layout
@@ -88,6 +90,17 @@ class WeatherApp:
         self.cities = PopularCities(right_col)
         self.cities.pack(fill="x", pady=(0, 20))
         
-        # Forecast
-        self.forecast = ForecastPanel(right_col)
+
+        # Forecast (with default city)
+        self.forecast = ForecastPanel(right_col, city="London")
         self.forecast.pack(fill="both", expand=True)
+
+    def on_search(self, city):
+        """Called when user searches for a city"""
+        print(f"Updating weather for: {city}")
+        
+        # Update the weather card with new city
+        self.weather_card.update_weather(city)
+        
+        # Update the forecast with new city
+        self.forecast.update_forecast(city)

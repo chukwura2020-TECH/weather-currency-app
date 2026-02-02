@@ -6,18 +6,20 @@ import tkinter as tk
 from gui.styles.theme import COLORS, FONTS, DIMENSIONS
 
 class ForecastPanel(tk.Frame):
-    def __init__(self, parent):
+    def __init__(self, parent, city=None):  # Add city parameter here
         super().__init__(parent, bg='white')
+        
+        self.city = city or "London"  # Store the city, default to London
         
         self._create_widgets()
     
     def _create_widgets(self):
         """Create forecast list"""
         
-        # Title
+        # Title - now shows the city
         tk.Label(
             self,
-            text="Forecast",
+            text=f"Forecast for {self.city}",  # Use the city in title
             bg='white',
             fg=COLORS['text_dark'],
             font=FONTS['heading'],
