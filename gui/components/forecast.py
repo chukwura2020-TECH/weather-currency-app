@@ -1,18 +1,23 @@
 # gui/components/forecast.py
 """
-Forecast display component.
+Forecast display component - now with REAL API data!
 """
 import tkinter as tk
 from gui.styles.theme import COLORS, FONTS, DIMENSIONS
+from api.weather_api import WeatherAPI
+from datetime import datetime
 
 class ForecastPanel(tk.Frame):
-    def __init__(self, parent):
+    def __init__(self, parent, city="London"):
         super().__init__(parent, bg='white')
         
+        self.city = city
+        self.api = WeatherAPI()
         self._create_widgets()
+        self.update_forecast()  # Fetch real data on startup
     
     def _create_widgets(self):
-        """Create forecast list"""
+        """Create forecast list structure"""
         
         # Title
         tk.Label(
@@ -24,7 +29,7 @@ class ForecastPanel(tk.Frame):
             anchor="w"
         ).pack(fill="x", padx=DIMENSIONS['padding'], pady=(15, 10))
         
-        # Today/Next tabs (simplified)
+        # Today/Next tabs
         tabs = tk.Frame(self, bg='white')
         tabs.pack(fill="x", padx=DIMENSIONS['padding'], pady=(0, 10))
         
@@ -48,22 +53,101 @@ class ForecastPanel(tk.Frame):
             pady=5
         ).pack(side="left")
         
-        # Sample forecast days
-        days = [
-            ("Today", "☁️", "24°", "23°"),
-            ("Thu 4Mar", "🌤️", "23°", "23°"),
-            ("Fri 22 Mar", "🌧️", "22°", "18°"),
-            ("Sat 26 Mar", "🌧️", "21°", "18°"),
-            ("Next Sun", "⛅", "19°", "18°"),
-        ]
+        # Container for forecast items
+        self.forecast_container = tk.Frame(self, bg='white')
+        self.forecast_container.pack(fill="both", expand=True)
         
-        for day, icon, high, low in days:
-            self._create_forecast_item(day, icon, high, low)
+        # Loading message
+        self.loading_label = tk.Label(
+            self.forecast_container,
+            text="Loading forecast...",
+            bg='white',
+            fg=COLORS['text_muted'],
+            font=FONTS['body']
+        )
+        self.loading_label.pack(pady=20)
+    
+    def update_forecast(self, city=None):
+        """Fetch and display real forecast data"""
+        if city:
+            self.city = city
+        
+        # Clear loading message
+        if self.loading_label.winfo_exists():
+            self.loading_label.destroy()
+        
+        # Fetch forecast data
+        forecast_data = self.api.get_forecast(self.city)
+        
+        if forecast_data:
+            # Process forecast data - get one entry per day
+            daily_forecasts = self._process_forecast(forecast_data)
+            
+            # Display each day
+            for day_data in daily_forecasts[:5]:  # Show 5 days
+                self._create_forecast_item(
+                    day_data['day'],
+                    day_data['icon'],
+                    day_data['temp_max'],
+                    day_data['temp_min']
+                )
+        else:
+            # Show error
+            tk.Label(
+                self.forecast_container,
+                text="Error loading forecast",
+                bg='white',
+                fg=COLORS['text_muted'],
+                font=FONTS['body']
+            ).pack(pady=20)
+    
+    def _process_forecast(self, forecast_data):
+        """Process API forecast data into daily summaries"""
+        daily_data = {}
+        
+        for item in forecast_data['list']:
+            # Get date
+            date = datetime.fromtimestamp(item['dt'])
+            day_key = date.strftime('%Y-%m-%d')
+            
+            if day_key not in daily_data:
+                daily_data[day_key] = {
+                    'date': date,
+                    'temps': [],
+                    'conditions': []
+                }
+            
+            daily_data[day_key]['temps'].append(item['main']['temp'])
+            daily_data[day_key]['conditions'].append(item['weather'][0]['main'])
+        
+        # Convert to list format
+        result = []
+        for day_key in sorted(daily_data.keys())[:5]:
+            data = daily_data[day_key]
+            date = data['date']
+            
+            # Format day name
+            if date.date() == datetime.now().date():
+                day_str = "Today"
+            else:
+                day_str = date.strftime('%a %d %b')
+            
+            # Get most common condition
+            condition = max(set(data['conditions']), key=data['conditions'].count)
+            
+            result.append({
+                'day': day_str,
+                'icon': self._get_weather_icon(condition),
+                'temp_max': f"{round(max(data['temps']))}°",
+                'temp_min': f"{round(min(data['temps']))}°"
+            })
+        
+        return result
     
     def _create_forecast_item(self, day, icon, high, low):
         """Create a single forecast item"""
         
-        item = tk.Frame(self, bg='white')
+        item = tk.Frame(self.forecast_container, bg='white')
         item.pack(fill="x", padx=15, pady=3)
         
         # Day
@@ -88,7 +172,7 @@ class ForecastPanel(tk.Frame):
         # Temperatures
         tk.Label(
             item,
-            text=f"{high}",
+            text=high,
             bg='white',
             fg=COLORS['text_dark'],
             font=FONTS['body_bold']
@@ -96,8 +180,21 @@ class ForecastPanel(tk.Frame):
         
         tk.Label(
             item,
-            text=f"{low}",
+            text=low,
             bg='white',
             fg=COLORS['text_muted'],
             font=FONTS['body']
         ).pack(side="right")
+    
+    def _get_weather_icon(self, condition):
+        """Return appropriate emoji for weather condition"""
+        icons = {
+            "Clear": "☀️",
+            "Clouds": "☁️",
+            "Rain": "🌧️",
+            "Drizzle": "🌦️",
+            "Thunderstorm": "⛈️",
+            "Snow": "❄️",
+            "Mist": "🌫️",
+        }
+        return icons.get(condition, "🌤️")
