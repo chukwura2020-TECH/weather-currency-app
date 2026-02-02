@@ -20,12 +20,16 @@ COLORS = {
     # Accent colors
     'accent_blue': '#3498DB',
     'accent_light': '#E8F4F8',
+    
+    # Border colors
+    'border_light': '#E1E8ED',    # Light gray border
 }
 
 # ============= FONTS =============
 FONTS = {
     'title': ('Segoe UI', 28, 'bold'),           # Large titles
     'heading': ('Segoe UI', 16, 'bold'),         # Section headings
+    'subheading': ('Segoe UI', 14, 'bold'),      # Subheadings
     'body': ('Segoe UI', 11),                    # Normal text
     'body_bold': ('Segoe UI', 11, 'bold'),       # Bold text
     'temperature': ('Segoe UI', 48, 'bold'),     # Big temperature number
