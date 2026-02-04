@@ -13,7 +13,7 @@ class ForecastPanel(tk.Frame):
     def __init__(self, parent, city="London"):
         super().__init__(parent, bg='white')
         
-        self.city == city
+        self.city = city
         self.api = WeatherAPI()
         self._create_widgets()
         self.update_forecast()  # Fetch real data on startup
