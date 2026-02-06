@@ -37,7 +37,7 @@ class Sidebar(tk.Frame):
         
         # Navigation items with view names
         nav_items = [
-            ("🏠", "weather", "Weather"),
+            ("⛅", "weather", "Weather"),
             ("💱", "currency", "Currency"),
             ("⭐", "favorites", "Favorites"),
             ("⚙️", "settings", "Settings"),
