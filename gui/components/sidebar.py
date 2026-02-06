@@ -1,17 +1,20 @@
 # gui/components/sidebar.py
+# gui/components/sidebar.py
 """
-Sidebar navigation component.
+Sidebar navigation component with view switching.
 """
 import tkinter as tk
 from gui.styles.theme import COLORS, DIMENSIONS
 
 class Sidebar(tk.Frame):
-    def __init__(self, parent):
+    def __init__(self, parent, switch_view_callback):
         super().__init__(
             parent, 
             bg=COLORS['bg_sidebar'], 
             width=DIMENSIONS['sidebar_width']
         )
+        
+        self.switch_view = switch_view_callback
         
         # Prevent the frame from shrinking
         self.pack_propagate(False)
@@ -32,15 +35,15 @@ class Sidebar(tk.Frame):
         )
         logo.pack(pady=(20, 40))
         
-        # Navigation buttons (using emojis as icons)
+        # Navigation items with view names
         nav_items = [
-            "🏠",  # Home
-            "🔄",  # Refresh
-            "⭐",  # Favorites
-            "⚙️",  # Settings
+            ("🏠", "weather", "Weather"),
+            ("💱", "currency", "Currency"),
+            ("⭐", "favorites", "Favorites"),
+            ("⚙️", "settings", "Settings"),
         ]
         
-        for icon in nav_items:
+        for icon, view_name, tooltip in nav_items:
             btn = tk.Label(
                 self,
                 text=icon,
@@ -51,6 +54,9 @@ class Sidebar(tk.Frame):
                 pady=15
             )
             btn.pack(pady=10)
+            
+            # Click handler
+            btn.bind("<Button-1>", lambda e, v=view_name: self.switch_view(v))
             
             # Add hover effect
             btn.bind("<Enter>", lambda e, b=btn: b.config(bg=COLORS['bg_secondary']))

@@ -1,21 +1,17 @@
 # gui/main_gui.py
 """
-Main application window - complete dashboard.
+Main application window - with Weather and Currency tabs.
 """
 import tkinter as tk
+from tkinter import ttk
 from gui.styles.theme import COLORS, DIMENSIONS, FONTS
 from gui.components.sidebar import Sidebar
-from gui.components.search_bar import SearchBar
-from gui.components.weather_card import CurrentWeatherCard
-from gui.map_gui import MapPlaceholder
-from gui.components.popular_cities import PopularCities
-from gui.components.forecast import ForecastPanel
-from gui.components.summary_chart import SummaryChart
+from gui.currency_gui import CurrencyConverter
 
 class WeatherApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Weather Dashboard")
+        self.root.title("Weather & Currency Dashboard")
         
         # Set window size
         window_width = DIMENSIONS['window_width']
@@ -28,79 +24,42 @@ class WeatherApp:
         self._create_layout()
     
     def _create_layout(self):
-        """Create the complete dashboard layout"""
+        """Create the main layout with sidebar and tabbed content"""
         
         # LEFT: Sidebar
-        self.sidebar = Sidebar(self.root)
+        self.sidebar = Sidebar(self.root, self.switch_view)
         self.sidebar.pack(side="left", fill="y")
         
-        # RIGHT: Main content area with scrolling
+        # RIGHT: Main content area
         self.content_frame = tk.Frame(self.root, bg=COLORS['bg_primary'])
         self.content_frame.pack(side="right", fill="both", expand=True)
         
-        # Create canvas for scrolling
-        canvas = tk.Canvas(self.content_frame, bg=COLORS['bg_primary'], highlightthickness=0)
-        scrollbar = tk.Scrollbar(self.content_frame, orient="vertical", command=canvas.yview)
-        scrollable_frame = tk.Frame(canvas, bg=COLORS['bg_primary'])
+        # Load default view (Weather)
+        self.current_view = None
+        self.switch_view("weather")
+    
+    def switch_view(self, view_name):
+        """Switch between different views (Weather, Currency)"""
         
-        scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-        )
+        # Clear current view
+        if self.current_view:
+            self.current_view.destroy()
         
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar.set)
+        # Load new view
+        if view_name == "weather":
+            # Import here to avoid circular imports
+            from gui.weather_dashboard import WeatherDashboard
+            self.current_view = WeatherDashboard(self.content_frame)
+        elif view_name == "currency":
+            self.current_view = CurrencyConverter(self.content_frame)
+        else:
+            # Placeholder for other views
+            self.current_view = tk.Label(
+                self.content_frame,
+                text=f"{view_name.title()} - Coming Soon",
+                bg=COLORS['bg_primary'],
+                fg=COLORS['text_white'],
+                font=FONTS['title']
+            )
         
-        canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
-        
-        # Add all components
-        
-        # Search bar
-        # Search bar at the top (with callback)
-        self.search_bar = SearchBar(scrollable_frame, self.on_search)
-        self.search_bar.pack(fill="x")
-        
-        # Current Weather Card
-        # Current Weather Card (with default city)
-        self.weather_card = CurrentWeatherCard(scrollable_frame, city="London")
-        self.weather_card.pack(fill="x", padx=20, pady=(0, 20))
-        
-        # Two-column layout
-        columns = tk.Frame(scrollable_frame, bg=COLORS['bg_primary'])
-        columns.pack(fill="both", expand=True, padx=20)
-        
-        # LEFT COLUMN
-        left_col = tk.Frame(columns, bg=COLORS['bg_primary'])
-        left_col.pack(side="left", fill="both", expand=True, padx=(0, 10))
-        
-        # Map
-        self.map = MapPlaceholder(left_col)
-        self.map.pack(fill="x", pady=(0, 20))
-        
-        # Summary Chart
-        self.chart = SummaryChart(left_col)
-        self.chart.pack(fill="x")
-        
-        # RIGHT COLUMN
-        right_col = tk.Frame(columns, bg=COLORS['bg_primary'])
-        right_col.pack(side="right", fill="both", padx=(10, 0))
-        
-        # Popular Cities
-        self.cities = PopularCities(right_col)
-        self.cities.pack(fill="x", pady=(0, 20))
-        
-
-        # Forecast (with default city)
-        self.forecast = ForecastPanel(right_col, city="London")
-        self.forecast.pack(fill="both", expand=True)
-
-    def on_search(self, city):
-        """Called when user searches for a city"""
-        print(f"Updating weather for: {city}")
-        
-        # Update the weather card with new city
-        self.weather_card.update_weather(city)
-        
-        # Update the forecast with new city
-        self.forecast.update_forecast(city)
+        self.current_view.pack(fill="both", expand=True)
