@@ -1,19 +1,3 @@
-<<<<<<< HEAD
-import tkinter as tk
-
-
-class CurrencyFrame(tk.Frame):
-    def __init__(self, parent, controller):
-        super().__init__(parent)
-
-        tk.Label(self, text="💱 Currency Converter", font=("Arial", 18)).pack(pady=15)
-
-        tk.Button(
-            self,
-            text="Back to Weather",
-            command=lambda: controller.show_frame("WeatherFrame")
-        ).pack()
-=======
 # gui/currency_gui.py
 """
 Currency converter interface.
@@ -22,6 +6,7 @@ import tkinter as tk
 from tkinter import ttk
 from gui.styles.theme import COLORS, FONTS, DIMENSIONS
 from api.currency_api import CurrencyAPI
+from gui.components.conversion_history import ConversionHistory
 
 class CurrencyConverter(tk.Frame):
     """Currency converter view"""
@@ -172,6 +157,10 @@ class CurrencyConverter(tk.Frame):
             font=FONTS['body']
         )
         self.rate_label.pack()
+        
+        # History panel
+        self.history_panel = ConversionHistory(container)
+        self.history_panel.pack(fill="both", expand=True, pady=(30, 0))
     
     def _swap_currencies(self):
         """Swap from and to currencies"""
@@ -213,6 +202,9 @@ class CurrencyConverter(tk.Frame):
                     text=f"1 {from_curr} = {result['rate']:.4f} {to_curr}"
                 )
                 
+                # Add to history display
+                self.history_panel.add_conversion(result)
+                
                 # Add to history
                 self.conversion_history.append(result)
             else:
@@ -222,4 +214,3 @@ class CurrencyConverter(tk.Frame):
         except ValueError:
             self.result_label.config(text="Invalid amount")
             self.rate_label.config(text="Please enter a valid number")
->>>>>>> 7623fb2874d0efc944549ced80741849c835f8d1
