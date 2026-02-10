@@ -5,7 +5,7 @@ Current weather display card - now with REAL API data!
 import tkinter as tk
 from gui.styles.theme import COLORS, FONTS, DIMENSIONS
 from api.weather_api import WeatherAPI
-
+from utils.favorites import add_favorite, is_favorite
 class CurrentWeatherCard(tk.Frame):
     """Large card displaying current weather conditions from API"""
     
@@ -42,6 +42,17 @@ class CurrentWeatherCard(tk.Frame):
         )
         self.city_label.pack(side="left")
         
+        # Favorite star button
+        self.star_btn = tk.Label(
+            self,
+            text="⭐" if is_favorite(self.city) else "☆",
+            bg=COLORS['card_bg'],
+            fg='#FFD700',
+            font=('Segoe UI', 20),
+            cursor='hand2'
+        )
+        self.star_btn.place(x=280, y=20)
+        self.star_btn.bind('<Button-1>', self._toggle_favorite)
         self.date_label = tk.Label(
             self.header,
             text="",
@@ -173,3 +184,13 @@ class CurrentWeatherCard(tk.Frame):
             "Fog": "🌫️",
         }
         return icons.get(condition, "🌤️")
+    def _toggle_favorite(self, event=None):
+        """Toggle city as favorite"""
+        from utils.favorites import remove_favorite
+        
+        if is_favorite(self.city):
+            remove_favorite(self.city)
+            self.star_btn.config(text="☆")
+        else:
+            add_favorite(self.city)
+            self.star_btn.config(text="⭐")
