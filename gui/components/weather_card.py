@@ -5,13 +5,27 @@ Current weather display card - now with REAL API data!
 import tkinter as tk
 from gui.styles.theme import COLORS, FONTS, DIMENSIONS
 from api.weather_api import WeatherAPI
+from gui.components.loading import LoadingSpinner 
 
 class CurrentWeatherCard(tk.Frame):
     """Large card displaying current weather conditions from API"""
     
     def __init__(self, parent, city="London"):
-        super().__init__(parent, bg='white', relief="flat", bd=0)
-        
+        super().__init__(parent, bg='white', relief="flat", bd=0) 
+        self.spinner = LoadingSpinner(self, size=60, bg= COLORS['bg_card'])
+        self.spinner.place(relx=0.5, rely=0.5, anchor='center')
+        self.spinner.pack_forget()
+
+    def show_loading(self):
+        """Show loading spinner"""
+        self.spinner.pack(pady=100)
+        self.spinner.start()
+
+    def hide_loading(self):
+        """Hide loading spinner"""
+        self.spinner.stop()
+        self.spinner.pack_forget()
+
         # Add visual depth
         self.config(highlightbackground=COLORS['border_light'], highlightthickness=1)
         
