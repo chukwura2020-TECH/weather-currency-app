@@ -3,6 +3,27 @@
 Application theme and styling.
 """
 
+# ============= COLORS =============
+COLORS = {
+    # Main background colors
+    'bg_primary': '#5B9BD5',      # Blue background (like in the image)
+    'bg_secondary': '#4A7BA7',    # Slightly darker blue
+    'bg_card': '#FFFFFF',         # White for cards/panels
+    'card_bg': '#FFFFFF',         # White for cards/panels (alternative key name)
+    'bg_sidebar': '#2E5090',      # Dark blue for sidebar
+    
+    # Text colors
+    'text_white': '#FFFFFF',      # White text
+    'text_dark': '#2C3E50',       # Dark text for white backgrounds
+    'text_muted': '#95A5A6',      # Gray text for less important info
+    
+    # Accent colors
+    'accent_blue': '#3498DB',
+    'accent_light': '#E8F4F8',
+    
+    # Border colors
+    'border_light': '#E1E8ED',    # Light gray border
+    }
 # Current theme state
 CURRENT_THEME = 'light'
 
