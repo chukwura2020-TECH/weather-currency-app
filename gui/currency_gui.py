@@ -2,6 +2,9 @@
 """
 Currency converter interface.
 """
+import csv
+from datetime import datetime
+from tkinter import filedialog
 import tkinter as tk
 from tkinter import ttk
 from gui.styles.theme import COLORS, FONTS, DIMENSIONS
@@ -137,6 +140,21 @@ class CurrencyConverter(tk.Frame):
             command=self._convert
         )
         convert_btn.pack(pady=20)
+
+        # Export button
+        export_btn = tk.Button(
+            container,
+            text="📊 Export History",
+            bg='#48BB78',
+            fg='white',
+            font=FONTS['body_bold'],
+            bd=0,
+            padx=20,
+            pady=10,
+            cursor='hand2',
+            command=self._export_to_csv
+        )
+        export_btn.pack(pady=10)
         
         # Result display
         self.result_label = tk.Label(
@@ -159,8 +177,49 @@ class CurrencyConverter(tk.Frame):
         self.rate_label.pack()
         
         # History panel
-        self.history_panel = ConversionHistory(container)
+        self.history_panel = ConversionHistory(self)
         self.history_panel.pack(fill="both", expand=True, pady=(30, 0))
+    
+    def _export_to_csv(self):
+        """Export conversion history to CSV"""
+        if not self.conversion_history:
+            self.result_label.config(text="No conversions to export")
+            return
+        
+        # Ask user where to save
+        filename = filedialog.asksaveasfilename(
+            defaultextension=".csv",
+            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+            initialfile=f"currency_conversions_{datetime.now().strftime('%Y%m%d')}.csv"
+        )
+        
+        if not filename:
+            return
+        
+        try:
+            # Write to CSV
+            with open(filename, 'w', newline='') as f:
+                writer = csv.writer(f)
+                
+                # Header
+                writer.writerow(['Date', 'Amount', 'From', 'To', 'Rate', 'Result'])
+                
+                # Data
+                for conversion in self.conversion_history:
+                    writer.writerow([
+                        datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                        conversion['amount'],
+                        conversion['from_currency'],
+                        conversion['to_currency'],
+                        conversion['rate'],
+                        conversion['converted']
+                    ])
+            
+            self.result_label.config(text=f"✓ Exported to {filename}")
+            self.rate_label.config(text="")
+        except Exception as e:
+            self.result_label.config(text="Export failed")
+            self.rate_label.config(text=str(e))
     
     def _swap_currencies(self):
         """Swap from and to currencies"""

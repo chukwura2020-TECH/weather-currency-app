@@ -2,6 +2,7 @@
 """
 Main application window - with Weather and Currency tabs.
 """
+from gui.components.alert_banner import AlertBanner
 import tkinter as tk
 from tkinter import ttk
 from gui.styles.theme import COLORS, DIMENSIONS, FONTS
@@ -44,9 +45,17 @@ class WeatherApp:
         self.content_frame = tk.Frame(right_col, bg=COLORS['bg_primary'])
         self.content_frame.pack(fill="both", expand=True)
         
+        # Alert banner (add right after creating content_frame)
+        self.alert_banner = AlertBanner(self.content_frame)
+        
         # Load default view (Weather)
         self.current_view = None
         self.switch_view("weather")
+        
+        #Test alert (remove after testing)
+        self.alert_banner.show_alert("Severe Weather Alert: Heavy rain expected!", "warning")
+
+
     
     
     def switch_view(self, view_name):
