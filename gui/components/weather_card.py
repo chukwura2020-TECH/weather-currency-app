@@ -6,6 +6,7 @@ import tkinter as tk
 from gui.styles.theme import COLORS, FONTS, DIMENSIONS
 from api.weather_api import WeatherAPI
 from gui.components.loading import LoadingSpinner 
+from utils.favorites import add_favorite, is_favorite, remove_favorite
 
 class CurrentWeatherCard(tk.Frame):
     """Large card displaying current weather conditions from API"""
@@ -58,6 +59,18 @@ class CurrentWeatherCard(tk.Frame):
             font=FONTS['title']
         )
         self.city_label.pack(side="left")
+        
+        # Favorite star button
+        self.star_btn = tk.Label(
+            self.header,
+            text="⭐" if is_favorite(self.city) else "☆",
+            bg='white',
+            fg='#FFD700',
+            font=('Segoe UI', 20),
+            cursor='hand2'
+        )
+        self.star_btn.pack(side="right", padx=(10, 0))
+        self.star_btn.bind('<Button-1>', self._toggle_favorite)
         
         self.date_label = tk.Label(
             self.header,
@@ -190,3 +203,12 @@ class CurrentWeatherCard(tk.Frame):
             "Fog": "🌫️",
         }
         return icons.get(condition, "🌤️")
+    
+    def _toggle_favorite(self, event=None):
+        """Toggle city as favorite"""
+        if is_favorite(self.city):
+            remove_favorite(self.city)
+            self.star_btn.config(text="☆")
+        else:
+            add_favorite(self.city)
+            self.star_btn.config(text="⭐")
