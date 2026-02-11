@@ -3,27 +3,6 @@
 Application theme and styling.
 """
 
-# ============= COLORS =============
-COLORS = {
-    # Main background colors
-    'bg_primary': '#5B9BD5',      # Blue background (like in the image)
-    'bg_secondary': '#4A7BA7',    # Slightly darker blue
-    'bg_card': '#FFFFFF',         # White for cards/panels
-    'card_bg': '#FFFFFF',         # White for cards/panels (alternative key name)
-    'bg_sidebar': '#2E5090',      # Dark blue for sidebar
-    
-    # Text colors
-    'text_white': '#FFFFFF',      # White text
-    'text_dark': '#2C3E50',       # Dark text for white backgrounds
-    'text_muted': '#95A5A6',      # Gray text for less important info
-    
-    # Accent colors
-    'accent_blue': '#3498DB',
-    'accent_light': '#E8F4F8',
-    
-    # Border colors
-    'border_light': '#E1E8ED',    # Light gray border
-    }
 # Current theme state
 CURRENT_THEME = 'light'
 
@@ -36,8 +15,9 @@ LIGHT_COLORS = {
     'text_muted': '#718096',
     'text_white': '#FFFFFF',
     'accent_blue': '#4A90E2',
-    'accent_light': '#E5E7EB' ,
+    'accent_light': '#E5E7EB',
     'bg_card': '#FFFFFF',
+    'card_bg': '#FFFFFF',  # Alternative key name
     'border_light': '#E2E8F0',
     'success': '#48BB78',
     'warning': '#ED8936',
@@ -53,8 +33,9 @@ DARK_COLORS = {
     'text_muted': '#A0AEC0',
     'text_white': '#F7FAFC',
     'accent_blue': '#63B3ED',
-    'accent_light': '#E5E7EB', 
+    'accent_light': '#E5E7EB',
     'bg_card': '#2D3748',
+    'card_bg': '#2D3748',  # Alternative key name
     'border_light': '#4A5568',
     'success': '#48BB78',
     'warning': '#ED8936',
@@ -64,7 +45,7 @@ DARK_COLORS = {
 # Active colors (starts with light)
 COLORS = LIGHT_COLORS.copy()
 
-# Fonts - ALL possible fonts
+# Fonts
 FONTS = {
     'title': ('Segoe UI', 24, 'bold'),
     'heading': ('Segoe UI', 14, 'bold'),
@@ -76,7 +57,7 @@ FONTS = {
     'large': ('Segoe UI', 18, 'bold'),
 }
 
-# Dimensions - ALL possible dimensions
+# Dimensions
 DIMENSIONS = {
     'padding': 20,
     'border_radius': 10,
