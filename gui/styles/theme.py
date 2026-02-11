@@ -10,6 +10,7 @@ COLORS = {
     'bg_primary': '#5B9BD5',      # Blue background (like in the image)
     'bg_secondary': '#4A7BA7',    # Slightly darker blue
     'bg_card': '#FFFFFF',         # White for cards/panels
+    'card_bg': '#FFFFFF',         # White for cards/panels (alternative key name)
     'bg_sidebar': '#2E5090',      # Dark blue for sidebar
     
     # Text colors

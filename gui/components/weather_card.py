@@ -6,6 +6,7 @@ import tkinter as tk
 from gui.styles.theme import COLORS, FONTS, DIMENSIONS
 from api.weather_api import WeatherAPI
 from utils.favorites import add_favorite, is_favorite
+
 class CurrentWeatherCard(tk.Frame):
     """Large card displaying current weather conditions from API"""
     
