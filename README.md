@@ -216,4 +216,4 @@ Project Link: https://github.com/chukwura2020-TECH/weather-currency-app
 
 ---
 
-**Built with ❤️ by Team Weather-Currency**
+**Built with ❤️ by Team Weaher-Currency**
