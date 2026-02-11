@@ -10,7 +10,7 @@ class FavoritesPanel(tk.Frame):
     """Display favorite cities"""
     
     def __init__(self, parent, on_city_click=None):
-        super().__init__(parent, bg=COLORS['card_bg'])
+        super().__init__(parent, bg=COLORS['bg_card'])
         
         self.on_city_click = on_city_click
         self._create_widgets()
@@ -19,19 +19,19 @@ class FavoritesPanel(tk.Frame):
     def _create_widgets(self):
         """Create favorites list UI"""
         # Title
-        title_frame = tk.Frame(self, bg=COLORS['card_bg'])
+        title_frame = tk.Frame(self, bg=COLORS['bg_card'])
         title_frame.pack(fill='x', padx=15, pady=(15, 10))
         
         tk.Label(
             title_frame,
             text="⭐ Favorite Cities",
-            bg=COLORS['card_bg'],
+            bg=COLORS['bg_card'],
             fg=COLORS['text_dark'],
             font=FONTS['heading']
         ).pack(side='left')
         
         # Cities container
-        self.cities_frame = tk.Frame(self, bg=COLORS['card_bg'])
+        self.cities_frame = tk.Frame(self, bg=COLORS['bg_card'])
         self.cities_frame.pack(fill='both', expand=True, padx=15)
     
     def refresh(self):
@@ -47,7 +47,7 @@ class FavoritesPanel(tk.Frame):
             tk.Label(
                 self.cities_frame,
                 text="No favorites yet",
-                bg=COLORS['card_bg'],
+                bg=COLORS['bg_card'],
                 fg=COLORS['text_muted'],
                 font=FONTS['small']
             ).pack(pady=20)
