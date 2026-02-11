@@ -9,6 +9,7 @@ from gui.styles.theme import COLORS, DIMENSIONS, FONTS
 from gui.styles.theme import COLORS      
 from gui.components.sidebar import Sidebar
 from gui.currency_gui import CurrencyConverter
+from gui.components.favorites import FavoritesPanel
 
 class WeatherApp:
     def __init__(self, root):
@@ -27,14 +28,22 @@ class WeatherApp:
     
     def _create_layout(self):
         """Create the main layout with sidebar and tabbed content"""
-        
+    
         # LEFT: Sidebar
         self.sidebar = Sidebar(self.root, self.switch_view)
         self.sidebar.pack(side="left", fill="y")
         
-        # RIGHT: Main content area
-        self.content_frame = tk.Frame(self.root, bg=COLORS['bg_primary'])
-        self.content_frame.pack(side="right", fill="both", expand=True)
+        # RIGHT: Main content area (CREATE right_col here)
+        right_col = tk.Frame(self.root, bg=COLORS['bg_primary'])
+        right_col.pack(side="right", fill="both", expand=True)
+        
+        # Add favorites panel to the right column
+        self.favorites = FavoritesPanel(right_col, on_city_click=self._on_favorite_city_click)
+        self.favorites.pack(fill='x', pady=(0, 20))
+        
+        # Content frame for switching views (below favorites)
+        self.content_frame = tk.Frame(right_col, bg=COLORS['bg_primary'])
+        self.content_frame.pack(fill="both", expand=True)
         
         # Alert banner (add right after creating content_frame)
         self.alert_banner = AlertBanner(self.content_frame)
@@ -47,6 +56,7 @@ class WeatherApp:
         self.alert_banner.show_alert("Severe Weather Alert: Heavy rain expected!", "warning")
 
 
+    
     
     def switch_view(self, view_name):
         """Switch between different views (Weather, Currency)"""
@@ -73,6 +83,14 @@ class WeatherApp:
             )
         
         self.current_view.pack(fill="both", expand=True)
+    
+    def _on_favorite_city_click(self, city_name):
+        """Handle when a favorite city is clicked"""
+        print(f"Favorite city clicked: {city_name}")
+        # Switch to weather view and update with this city
+        self.switch_view("weather")
+        if hasattr(self.current_view, 'update_city'):
+            self.current_view.update_city(city_name)
 
     def refresh_all_colors(self):
         """Refresh all component colors when theme changes"""

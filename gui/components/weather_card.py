@@ -1,14 +1,13 @@
 # gui/components/weather_card.py
 """
-Current weather display card - now with REAL API data and PNG icons!
+Current weather display card - now with REAL API data!
 """
 import tkinter as tk
-from PIL import Image, ImageTk
-import os
 from gui.styles.theme import COLORS, FONTS, DIMENSIONS
 from api.weather_api import WeatherAPI
 from gui.components.loading import LoadingSpinner 
 from utils.favorites import add_favorite, is_favorite, remove_favorite
+from utils.favorites import add_favorite, is_favorite
 
 class CurrentWeatherCard(tk.Frame):
     """Large card displaying current weather conditions from API"""
@@ -16,75 +15,14 @@ class CurrentWeatherCard(tk.Frame):
     def __init__(self, parent, city="London"):
         super().__init__(parent, bg='white', relief="flat", bd=0)
         
-        # Store city and API FIRST before creating widgets
-        self.city = city
-        self.api = WeatherAPI()
-        
-        # Load weather icons
-        self.weather_icons = self._load_weather_icons()
-        
-        # Setup spinner
-        self.spinner = LoadingSpinner(self, size=60, bg=COLORS['bg_card'])
-        self.spinner.place(relx=0.5, rely=0.5, anchor='center')
-        self.spinner.pack_forget()
-        
         # Add visual depth
         self.config(highlightbackground=COLORS['border_light'], highlightthickness=1)
         
+        self.city = city
+        self.api = WeatherAPI()
+        
         self._create_widgets()
         self.update_weather()  # Fetch real data on startup
-
-    def _load_weather_icons(self):
-        """Load PNG weather icons from assets folder"""
-        icons = {}
-        icon_size = (100, 100)  # Size for weather icons
-        
-        # Map weather conditions to icon filenames
-        icon_map = {
-            "Clear": "01d.png",
-            "Few_clouds": "02d.png",
-            "Scattered_clouds": "03d.png",
-            "Broken_clouds": "04d.png",
-            "Shower_rain": "09d.png",
-            "Rain": "10d.png",
-            "Thunderstorm": "11d.png",
-            "Snow": "13d.png",  # Use same icon for fog
-            "Mist": "50d.png",
-            "Fog": "50d.png"
-        }
-        
-        # Path to icons folder (UPDATED PATH)
-        icons_path = os.path.join("assets", "icons")
-        
-        # Load each icon
-        for condition, filename in icon_map.items():
-            icon_file = os.path.join(icons_path, filename)
-            
-            try:
-                # Load and resize image
-                img = Image.open(icon_file)
-                img = img.resize(icon_size, Image.Resampling.LANCZOS)
-                # Convert to PhotoImage
-                icons[condition] = ImageTk.PhotoImage(img)
-            except FileNotFoundError:
-                print(f"Warning: Icon not found: {icon_file}")
-                # Use a placeholder or emoji as fallback
-                icons[condition] = None
-            except Exception as e:
-                print(f"Error loading icon {filename}: {e}")
-                icons[condition] = None
-        
-        return icons
-
-    def show_loading(self):
-        """Show loading spinner"""
-        self.spinner.pack(pady=100)
-        self.spinner.start()
-
-    def hide_loading(self):
-        """Hide loading spinner"""
-        self.spinner.stop()
-        self.spinner.pack_forget()
     
     def _create_widgets(self):
         """Create the weather card layout"""
@@ -132,10 +70,12 @@ class CurrentWeatherCard(tk.Frame):
         self.main_section = tk.Frame(self.content, bg='white')
         self.main_section.pack(fill="x", pady=20)
         
-        # Weather icon (now using PNG images!)
+        # Weather icon
         self.icon_label = tk.Label(
             self.main_section,
-            bg='white'
+            text="🌤️",
+            bg='white',
+            font=('Segoe UI', 80)
         )
         self.icon_label.pack(side="left", padx=(0, 30))
         
@@ -216,9 +156,9 @@ class CurrentWeatherCard(tk.Frame):
             description = weather_data['weather'][0]['description'].title()
             self.desc_label.config(text=description)
             
-            # Update weather icon with PNG image
-            condition = weather_data['weather'][0]['main']
-            self._update_weather_icon(condition)
+            # Update weather icon based on condition
+            icon = self._get_weather_icon(weather_data['weather'][0]['main'])
+            self.icon_label.config(text=icon)
             
             # Update details
             self.detail_labels['humidity'].config(text=f"{weather_data['main']['humidity']}%")
@@ -235,27 +175,8 @@ class CurrentWeatherCard(tk.Frame):
             self.city_label.config(text="Error loading weather")
             self.desc_label.config(text="Please check your connection")
     
-    def _update_weather_icon(self, condition):
-        """Update icon label with PNG image"""
-        # Get the icon for this condition
-        icon = self.weather_icons.get(condition)
-        
-        if icon is None:
-            # Fallback to default icon
-            icon = self.weather_icons.get("default")
-        
-        if icon:
-            # Update label with PNG image
-            self.icon_label.config(image=icon)
-            # Keep a reference to prevent garbage collection
-            self.icon_label.image = icon
-        else:
-            # Fallback to emoji if no icon found
-            emoji = self._get_weather_emoji(condition)
-            self.icon_label.config(text=emoji, font=('Segoe UI', 80))
-    
-    def _get_weather_emoji(self, condition):
-        """Fallback emoji icons if PNG not found"""
+    def _get_weather_icon(self, condition):
+        """Return appropriate emoji for weather condition"""
         icons = {
             "Clear": "☀️",
             "Clouds": "☁️",
