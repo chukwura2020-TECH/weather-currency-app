@@ -3,6 +3,7 @@
 """
 Sidebar navigation component with view switching.
 """
+from gui.components.theme_toggle import ThemeToggle
 import tkinter as tk
 from gui.styles.theme import COLORS, DIMENSIONS
 
@@ -10,7 +11,7 @@ class Sidebar(tk.Frame):
     def __init__(self, parent, switch_view_callback):
         super().__init__(
             parent, 
-            bg=COLORS['bg_sidebar'], 
+            bg=COLORS['sidebar_bg'], 
             width=DIMENSIONS['sidebar_width']
         )
         
@@ -28,7 +29,7 @@ class Sidebar(tk.Frame):
         logo = tk.Label(
             self,
             text="🌤️",
-            bg=COLORS['bg_sidebar'],
+            bg=COLORS['sidebar_bg'],
             fg=COLORS['text_white'],
             font=('Segoe UI', 32),
             pady=20
@@ -47,7 +48,7 @@ class Sidebar(tk.Frame):
             btn = tk.Label(
                 self,
                 text=icon,
-                bg=COLORS['bg_sidebar'],
+                bg=COLORS['sidebar_bg'],
                 fg=COLORS['text_white'],
                 font=('Segoe UI', 24),
                 cursor="hand2",
@@ -60,4 +61,16 @@ class Sidebar(tk.Frame):
             
             # Add hover effect
             btn.bind("<Enter>", lambda e, b=btn: b.config(bg=COLORS['bg_secondary']))
-            btn.bind("<Leave>", lambda e, b=btn: b.config(bg=COLORS['bg_sidebar']))
+            btn.bind("<Leave>", lambda e, b=btn: b.config(bg=COLORS['sidebar_bg']))
+
+            # Dark mode toggle
+        tk.Frame(self, bg=COLORS['sidebar_bg'], height=20).pack()
+        self.theme_toggle = ThemeToggle(self, on_toggle_callback=self._on_theme_toggle)
+        self.theme_toggle.pack(pady=10)
+
+    def _on_theme_toggle(self, new_theme):
+        """Handle theme toggle"""
+        print(f"Theme switched to: {new_theme}")
+        # Tell main window to refresh
+        if hasattr(self.master, 'refresh_all_colors'):
+         self.master.refresh_all_colors()
