@@ -1,6 +1,7 @@
 # gui/currency_gui.py
 """
 Currency converter interface.
+🐛 FIXED: Convert button now properly displays results
 """
 import csv
 from datetime import datetime
@@ -66,6 +67,9 @@ class CurrencyConverter(tk.Frame):
         self.amount_entry.pack(fill="x", ipady=10, padx=5)
         self.amount_entry.insert(0, "100")
         
+        # 🐛 BUG #4 FIX: Bind Enter key to convert
+        self.amount_entry.bind('<Return>', lambda e: self._convert())
+        
         # From Currency section
         from_frame = tk.Frame(container, bg='white')
         from_frame.pack(fill="x", pady=(0, 20))
@@ -101,7 +105,9 @@ class CurrencyConverter(tk.Frame):
             padx=30,
             pady=10,
             cursor="hand2",
-            command=self._swap_currencies
+            command=self._swap_currencies,
+            activebackground='#357ABD',  # Darker blue on click
+            activeforeground='white'
         )
         swap_btn.pack()
         
@@ -126,7 +132,7 @@ class CurrencyConverter(tk.Frame):
         self.to_currency.pack(fill="x", ipady=8)
         self.to_currency.set("EUR")
         
-        # Convert button
+        # 🐛 BUG #4 FIX: Convert button with better visual feedback
         convert_btn = tk.Button(
             container,
             text="Convert",
@@ -137,7 +143,9 @@ class CurrencyConverter(tk.Frame):
             padx=40,
             pady=15,
             cursor="hand2",
-            command=self._convert
+            command=self._convert,
+            activebackground='#357ABD',  # Visual feedback on click
+            activeforeground='white'
         )
         convert_btn.pack(pady=20)
 
@@ -152,17 +160,20 @@ class CurrencyConverter(tk.Frame):
             padx=20,
             pady=10,
             cursor='hand2',
-            command=self._export_to_csv
+            command=self._export_to_csv,
+            activebackground='#38A169',
+            activeforeground='white'
         )
         export_btn.pack(pady=10)
         
-        # Result display
+        # 🐛 BUG #4 FIX: Result display with better visibility
         self.result_label = tk.Label(
             container,
-            text="",
+            text="Enter amount and click Convert",
             bg='white',
             fg=COLORS['text_dark'],
-            font=('Segoe UI', 24, 'bold')
+            font=('Segoe UI', 24, 'bold'),
+            wraplength=500
         )
         self.result_label.pack(pady=20)
         
@@ -172,7 +183,8 @@ class CurrencyConverter(tk.Frame):
             text="",
             bg='white',
             fg=COLORS['text_muted'],
-            font=FONTS['body']
+            font=FONTS['body'],
+            wraplength=500
         )
         self.rate_label.pack()
         
@@ -183,7 +195,8 @@ class CurrencyConverter(tk.Frame):
     def _export_to_csv(self):
         """Export conversion history to CSV"""
         if not self.conversion_history:
-            self.result_label.config(text="No conversions to export")
+            self.result_label.config(text="No conversions to export", fg='#E53E3E')
+            self.rate_label.config(text="")
             return
         
         # Ask user where to save
@@ -215,10 +228,10 @@ class CurrencyConverter(tk.Frame):
                         conversion['converted']
                     ])
             
-            self.result_label.config(text=f"✓ Exported to {filename}")
-            self.rate_label.config(text="")
+            self.result_label.config(text=f"✓ Exported successfully", fg='#48BB78')
+            self.rate_label.config(text=f"Saved to: {filename}")
         except Exception as e:
-            self.result_label.config(text="Export failed")
+            self.result_label.config(text="Export failed", fg='#E53E3E')
             self.rate_label.config(text=str(e))
     
     def _swap_currencies(self):
@@ -233,43 +246,88 @@ class CurrencyConverter(tk.Frame):
         self._convert()
     
     def _convert(self):
-        """Perform currency conversion"""
+        """
+        Perform currency conversion
+        🐛 BUG #4 FIXED: Properly displays conversion results
+        """
         try:
-            amount = float(self.amount_entry.get())
+            # Get input values
+            amount_str = self.amount_entry.get().strip()
+            
+            if not amount_str:
+                self.result_label.config(
+                    text="Please enter an amount",
+                    fg='#E53E3E'
+                )
+                self.rate_label.config(text="")
+                return
+            
+            amount = float(amount_str)
             from_curr = self.from_currency.get()
             to_curr = self.to_currency.get()
             
             if amount <= 0:
-                self.result_label.config(text="Please enter a positive amount")
+                self.result_label.config(
+                    text="Please enter a positive amount",
+                    fg='#E53E3E'
+                )
                 self.rate_label.config(text="")
                 return
             
             # Show loading
-            self.result_label.config(text="Converting...")
-            self.rate_label.config(text="")
-            self.update()
+            self.result_label.config(
+                text="Converting...",
+                fg=COLORS['text_dark']
+            )
+            self.rate_label.config(text="Please wait...")
+            self.update()  # Force UI update
             
             # Get conversion result
             result = self.api.convert_currency(amount, from_curr, to_curr)
             
             if result:
-                # Display result
+                # 🐛 BUG #4 FIX: Display result prominently
+                converted_amount = result['converted']
                 self.result_label.config(
-                    text=f"{result['converted']} {result['to_currency']}"
+                    text=f"{converted_amount:,.2f} {result['to_currency']}",
+                    fg='#48BB78'  # Green for success
                 )
                 self.rate_label.config(
-                    text=f"1 {from_curr} = {result['rate']:.4f} {to_curr}"
+                    text=f"Exchange Rate: 1 {from_curr} = {result['rate']:.4f} {to_curr}",
+                    fg=COLORS['text_muted']
                 )
                 
                 # Add to history display
                 self.history_panel.add_conversion(result)
                 
-                # Add to history
+                # Add to history list
                 self.conversion_history.append(result)
             else:
-                self.result_label.config(text="Conversion failed")
-                self.rate_label.config(text="Please check your connection")
+                # Show error
+                self.result_label.config(
+                    text="Conversion failed",
+                    fg='#E53E3E'  # Red for error
+                )
+                self.rate_label.config(
+                    text="Please check your internet connection and API key",
+                    fg='#E53E3E'
+                )
                 
         except ValueError:
-            self.result_label.config(text="Invalid amount")
-            self.rate_label.config(text="Please enter a valid number")
+            self.result_label.config(
+                text="Invalid amount",
+                fg='#E53E3E'
+            )
+            self.rate_label.config(
+                text="Please enter a valid number (e.g., 100 or 50.25)",
+                fg='#E53E3E'
+            )
+        except Exception as e:
+            self.result_label.config(
+                text="Error occurred",
+                fg='#E53E3E'
+            )
+            self.rate_label.config(
+                text=f"Error: {str(e)}",
+                fg='#E53E3E'
+            )

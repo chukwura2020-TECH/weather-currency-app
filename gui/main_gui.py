@@ -52,8 +52,8 @@ class WeatherApp:
         self.current_view = None
         self.switch_view("weather")
         
-        #Test alert (remove after testing)
-        self.alert_banner.show_alert("Severe Weather Alert: Heavy rain expected!", "warning")
+        # 🐛 BUG #8 FIXED: Removed the test alert that always showed "Heavy rain expected!"
+        # Old line: self.alert_banner.show_alert("Severe Weather Alert: Heavy rain expected!", "warning")
 
 
     
@@ -94,31 +94,31 @@ class WeatherApp:
 
     def refresh_all_colors(self):
         """Refresh all component colors when theme changes"""
-    # Update root background
+        # Update root background
         self.root.config(bg=COLORS['bg_primary'])
     
-    # Recursively update all widgets
+        # Recursively update all widgets
         self._update_widget_colors(self.root)
 
-def _update_widget_colors(self, widget):
-    """Recursively update widget colors"""
-    from gui.styles.theme import COLORS
-    
-    try:
-        # Update common widget types
-        if isinstance(widget, tk.Frame):
-            if 'bg' in widget.config():
-                current_bg = widget.cget('bg')
-                # Update if it's using theme colors
-                if current_bg in ['#4A90E2', '#FFFFFF', '#E8F4FD']:
-                    widget.config(bg=COLORS['bg_primary'])
+    def _update_widget_colors(self, widget):
+        """Recursively update widget colors"""
+        from gui.styles.theme import COLORS
         
-        elif isinstance(widget, tk.Label):
-            if 'bg' in widget.config():
-                widget.config(bg=COLORS['card_bg'], fg=COLORS['text_dark'])
-        
-        # Recursively update children
-        for child in widget.winfo_children():
-            self._update_widget_colors(child)
-    except:
-        pass
+        try:
+            # Update common widget types
+            if isinstance(widget, tk.Frame):
+                if 'bg' in widget.config():
+                    current_bg = widget.cget('bg')
+                    # Update if it's using theme colors
+                    if current_bg in ['#4A90E2', '#FFFFFF', '#E8F4FD']:
+                        widget.config(bg=COLORS['bg_primary'])
+            
+            elif isinstance(widget, tk.Label):
+                if 'bg' in widget.config():
+                    widget.config(bg=COLORS['card_bg'], fg=COLORS['text_dark'])
+            
+            # Recursively update children
+            for child in widget.winfo_children():
+                self._update_widget_colors(child)
+        except:
+            pass

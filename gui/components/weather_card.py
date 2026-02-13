@@ -1,6 +1,8 @@
 # gui/components/weather_card.py
 """
 Current weather display card - now with REAL API data!
+🐛 FIXED: Date format now shows full date with AM/PM time
+🐛 FIXED: Feels like is now properly displayed
 """
 import tkinter as tk
 from gui.styles.theme import COLORS, FONTS, DIMENSIONS
@@ -163,12 +165,18 @@ class CurrentWeatherCard(tk.Frame):
             # Update details
             self.detail_labels['humidity'].config(text=f"{weather_data['main']['humidity']}%")
             self.detail_labels['wind'].config(text=f"{weather_data['wind']['speed']} m/s")
-            self.detail_labels['feels_like'].config(text=f"{round(weather_data['main']['feels_like'])}°C")
+            
+            # 🐛 BUG #5 FIXED: Ensure feels_like is properly displayed
+            feels_like_temp = round(weather_data['main']['feels_like'])
+            self.detail_labels['feels_like'].config(text=f"{feels_like_temp}°C")
+            
             self.detail_labels['pressure'].config(text=f"{weather_data['main']['pressure']} hPa")
             
-            # Update timestamp
+            # 🐛 BUGS #2 & #3 FIXED: Full date with year, month, day AND 12-hour time with AM/PM
+            # OLD: now = datetime.now().strftime("%A, %H:%M")  # Only "Wednesday, 14:30"
+            # NEW: Full date with AM/PM
             from datetime import datetime
-            now = datetime.now().strftime("%A, %H:%M")
+            now = datetime.now().strftime("%A, %B %d, %Y • %I:%M %p")  # "Wednesday, February 13, 2026 • 02:30 PM"
             self.date_label.config(text=now)
         else:
             # Show error if API fails

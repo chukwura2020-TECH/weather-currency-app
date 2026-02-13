@@ -3,6 +3,7 @@ import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 """
 Forecast display component - now with REAL API data!
+🐛 FIXED: Only shows exactly 5 days in forecast
 """
 import tkinter as tk
 from gui.styles.theme import COLORS, FONTS, DIMENSIONS
@@ -74,19 +75,19 @@ class ForecastPanel(tk.Frame):
         if city:
             self.city = city
         
-        # Clear loading message
-        if self.loading_label.winfo_exists():
-            self.loading_label.destroy()
+        # Clear existing forecast items
+        for widget in self.forecast_container.winfo_children():
+            widget.destroy()
         
         # Fetch forecast data
         forecast_data = self.api.get_forecast(self.city)
         
         if forecast_data:
-            # Process forecast data - get one entry per day
+            # 🐛 BUG #1 FIXED: Process forecast to get EXACTLY 5 days
             daily_forecasts = self._process_forecast(forecast_data)
             
-            # Display each day
-            for day_data in daily_forecasts[:5]:  # Show 5 days
+            # Display each day - STRICTLY LIMIT TO 5
+            for day_data in daily_forecasts[:5]:  # Force limit to 5 days
                 self._create_forecast_item(
                     day_data['day'],
                     day_data['icon'],
@@ -104,9 +105,13 @@ class ForecastPanel(tk.Frame):
             ).pack(pady=20)
     
     def _process_forecast(self, forecast_data):
-        """Process API forecast data into daily summaries"""
+        """
+        Process API forecast data into daily summaries
+        🐛 FIXED: Returns EXACTLY 5 days, no more
+        """
         daily_data = {}
         
+        # Group data by day
         for item in forecast_data['list']:
             # Get date
             date = datetime.fromtimestamp(item['dt'])
@@ -122,9 +127,12 @@ class ForecastPanel(tk.Frame):
             daily_data[day_key]['temps'].append(item['main']['temp'])
             daily_data[day_key]['conditions'].append(item['weather'][0]['main'])
         
-        # Convert to list format
+        # Convert to list format and LIMIT TO 5 DAYS
         result = []
-        for day_key in sorted(daily_data.keys())[:5]:
+        sorted_days = sorted(daily_data.keys())
+        
+        # 🐛 CRITICAL FIX: Only process first 5 days
+        for day_key in sorted_days[:5]:  # Hard limit to 5 days
             data = daily_data[day_key]
             date = data['date']
             
@@ -144,7 +152,8 @@ class ForecastPanel(tk.Frame):
                 'temp_min': f"{round(min(data['temps']))}°"
             })
         
-        return result
+        # Final safety check - return max 5 items
+        return result[:5]
     
     def _create_forecast_item(self, day, icon, high, low):
         """Create a single forecast item"""
