@@ -1,76 +1,69 @@
 # gui/components/sidebar.py
-# gui/components/sidebar.py
 """
-Sidebar navigation component with view switching.
+Navigation sidebar component.
 """
-from gui.components.theme_toggle import ThemeToggle
 import tkinter as tk
-from gui.styles.theme import COLORS, DIMENSIONS
+from gui.styles.theme import COLORS, FONTS
 
 class Sidebar(tk.Frame):
-    def __init__(self, parent, switch_view_callback):
-        super().__init__(
-            parent, 
-            bg=COLORS['sidebar_bg'], 
-            width=DIMENSIONS['sidebar_width']
-        )
+    """Left sidebar with navigation icons"""
+    
+    def __init__(self, parent, on_navigate):
+        super().__init__(parent, bg=COLORS['bg_primary'], width=80)
         
-        self.switch_view = switch_view_callback
-        
-        # Prevent the frame from shrinking
+        self.on_navigate = on_navigate
         self.pack_propagate(False)
         
         self._create_widgets()
     
     def _create_widgets(self):
-        """Create navigation buttons"""
+        """Create sidebar navigation buttons"""
         
-        # App logo/icon at the top
-        logo = tk.Label(
-            self,
-            text="🌤️",
-            bg=COLORS['sidebar_bg'],
-            fg=COLORS['text_white'],
-            font=('Segoe UI', 32),
-            pady=20
-        )
-        logo.pack(pady=(20, 40))
+        # Logo/Title area
+        logo_frame = tk.Frame(self, bg=COLORS['bg_primary'])
+        logo_frame.pack(pady=30)
         
-        # Navigation items with view names
+        tk.Label(
+            logo_frame,
+            text="⛅",
+            bg=COLORS['bg_primary'],
+            font=('Segoe UI', 32)
+        ).pack()
+        
+        # Navigation buttons
         nav_items = [
-            ("⛅", "weather", "Weather"),
+            ("🌤️", "weather", "Weather"),
             ("💱", "currency", "Currency"),
-            ("⭐", "favorites", "Favorites"),
             ("⚙️", "settings", "Settings"),
         ]
         
-        for icon, view_name, tooltip in nav_items:
-            btn = tk.Label(
-                self,
-                text=icon,
-                bg=COLORS['sidebar_bg'],
-                fg=COLORS['text_white'],
-                font=('Segoe UI', 24),
-                cursor="hand2",
-                pady=15
-            )
-            btn.pack(pady=10)
-            
-            # Click handler
-            btn.bind("<Button-1>", lambda e, v=view_name: self.switch_view(v))
-            
-            # Add hover effect
-            btn.bind("<Enter>", lambda e, b=btn: b.config(bg=COLORS['bg_secondary']))
-            btn.bind("<Leave>", lambda e, b=btn: b.config(bg=COLORS['sidebar_bg']))
-
-            # Dark mode toggle
-        tk.Frame(self, bg=COLORS['sidebar_bg'], height=20).pack()
-        self.theme_toggle = ThemeToggle(self, on_toggle_callback=self._on_theme_toggle)
-        self.theme_toggle.pack(pady=10)
-
-    def _on_theme_toggle(self, new_theme):
-        """Handle theme toggle"""
-        print(f"Theme switched to: {new_theme}")
-        # Tell main window to refresh
-        if hasattr(self.master, 'refresh_all_colors'):
-         self.master.refresh_all_colors()
+        for icon, view, tooltip in nav_items:
+            self._create_nav_button(icon, view, tooltip)
+    
+    def _create_nav_button(self, icon, view, tooltip):
+        """Create a single navigation button"""
+        
+        btn = tk.Label(
+            self,
+            text=icon,
+            bg=COLORS['bg_primary'],
+            font=('Segoe UI', 28),
+            cursor="hand2",
+            padx=20,
+            pady=15
+        )
+        btn.pack(pady=10)
+        
+        # Hover effect
+        btn.bind('<Enter>', lambda e: btn.config(bg=COLORS['accent_blue']))
+        btn.bind('<Leave>', lambda e: btn.config(bg=COLORS['bg_primary']))
+        
+        # Click handler
+        btn.bind('<Button-1>', lambda e: self.on_navigate(view))
+    
+    def update_colors(self):
+        """Update colors when theme changes"""
+        self.config(bg=COLORS['bg_primary'])
+        for child in self.winfo_children():
+            if isinstance(child, tk.Label):
+                child.config(bg=COLORS['bg_primary'])

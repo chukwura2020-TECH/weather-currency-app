@@ -1,22 +1,52 @@
 # gui/weather_dashboard.py
 """
 Weather dashboard view with all weather components.
+NOW WITH: Loading spinners, real alerts, charts, and interactive map! 🚀
 """
 import tkinter as tk
 from tkinter import ttk
 from gui.styles.theme import COLORS, DIMENSIONS, FONTS
 from gui.components.search_bar import SearchBar
 from gui.components.weather_card import CurrentWeatherCard
-from gui.map_gui import MapPlaceholder
+from gui.map_gui import WeatherMap
 from gui.components.popular_cities import PopularCities
 from gui.components.forecast import ForecastPanel
 from gui.components.summary_chart import SummaryChart
+from gui.components.loading import LoadingOverlay
+from api.weather_api import WeatherAPI
 
 class WeatherDashboard(tk.Frame):
     def __init__(self, parent):
         super().__init__(parent, bg=COLORS['bg_primary'])
         
+        self.api = WeatherAPI()
+        self.current_city = "London"
+        
         self._create_layout()
+        
+        # Load initial data
+        self.after(100, self._initial_load)
+    
+    def _initial_load(self):
+        """Load initial weather data"""
+        # Get weather data
+        weather_data = self.api.get_current_weather(self.current_city)
+        
+        if weather_data:
+            # Update alert banner with real data
+            if hasattr(self.master.master, 'alert_banner'):
+                self.master.master.alert_banner.check_weather_alerts(weather_data)
+            
+            # Update map with coordinates
+            if weather_data.get('coord'):
+                lat = weather_data['coord']['lat']
+                lon = weather_data['coord']['lon']
+                self.map.update_location(self.current_city, lat, lon)
+            
+            # Update chart
+            forecast_data = self.api.get_forecast(self.current_city)
+            if forecast_data:
+                self.chart.update_chart(forecast_data)
     
     def _create_layout(self):
         """Create the weather dashboard layout"""
@@ -37,6 +67,10 @@ class WeatherDashboard(tk.Frame):
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
         
+        # Loading overlay
+        self.loading = LoadingOverlay(scrollable_frame, message="Loading weather data...")
+        self.loading.hide()
+        
         # Search bar
         self.search_bar = SearchBar(scrollable_frame, self.on_search)
         self.search_bar.pack(fill="x")
@@ -53,11 +87,11 @@ class WeatherDashboard(tk.Frame):
         left_col = tk.Frame(columns, bg=COLORS['bg_primary'])
         left_col.pack(side="left", fill="both", expand=True, padx=(0, 10))
         
-        # Map
-        self.map = MapPlaceholder(left_col)
+        # Interactive Map (ENHANCED!)
+        self.map = WeatherMap(left_col, city_name="London", lat=51.5074, lon=-0.1278)
         self.map.pack(fill="x", pady=(0, 20))
         
-        # Summary Chart
+        # Temperature Chart (ENHANCED!)
         self.chart = SummaryChart(left_col)
         self.chart.pack(fill="x")
         
@@ -77,8 +111,78 @@ class WeatherDashboard(tk.Frame):
         """Called when user searches for a city"""
         print(f"Updating weather for: {city}")
         
+        self.current_city = city
+        
+        # Show loading
+        self.loading.show(f"Loading {city}...")
+        self.update()
+        
         # Update the weather card with new city
         self.weather_card.update_weather(city)
         
         # Update the forecast with new city
         self.forecast.update_forecast(city)
+        
+        # Get weather data for alerts and map
+        weather_data = self.api.get_current_weather(city)
+        
+        if weather_data:
+            # Update alert banner
+            if hasattr(self.master.master, 'alert_banner'):
+                self.master.master.alert_banner.check_weather_alerts(weather_data)
+            
+            # Update map
+            if weather_data.get('coord'):
+                lat = weather_data['coord']['lat']
+                lon = weather_data['coord']['lon']
+                self.map.update_location(city, lat, lon)
+            
+            # Update chart
+            forecast_data = self.api.get_forecast(city)
+            if forecast_data:
+                self.chart.update_chart(forecast_data)
+        
+        # Hide loading
+        self.after(500, self.loading.hide)
+    
+    def update_city(self, city):
+        """Update dashboard to show a specific city"""
+        self.on_search(city)
+    
+    def update_colors(self):
+        """Update all colors when theme changes"""
+        self.config(bg=COLORS['bg_primary'])
+        
+        # Update all child components
+        if hasattr(self, 'weather_card'):
+            self._update_widget_colors(self.weather_card)
+        if hasattr(self, 'map'):
+            self.map.update_colors()
+        if hasattr(self, 'chart'):
+            self.chart.update_colors()
+        if hasattr(self, 'forecast'):
+            self._update_widget_colors(self.forecast)
+        if hasattr(self, 'cities'):
+            self._update_widget_colors(self.cities)
+        if hasattr(self, 'loading'):
+            self.loading.update_colors()
+    
+    def _update_widget_colors(self, widget):
+        """Recursively update widget colors"""
+        from gui.styles.theme import COLORS
+        
+        try:
+            if isinstance(widget, tk.Frame):
+                if widget.cget('bg') in ['#4A90E2', '#FFFFFF', '#E8F4FD', '#1A202C', '#2D3748']:
+                    widget.config(bg=COLORS['bg_card'])
+            
+            elif isinstance(widget, tk.Label):
+                current_bg = widget.cget('bg')
+                if current_bg in ['#FFFFFF', '#E8F4FD', '#2D3748']:
+                    widget.config(bg=COLORS['bg_card'], fg=COLORS['text_dark'])
+            
+            # Recursively update children
+            for child in widget.winfo_children():
+                self._update_widget_colors(child)
+        except:
+            pass

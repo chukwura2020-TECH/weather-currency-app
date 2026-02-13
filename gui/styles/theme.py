@@ -1,84 +1,86 @@
 # gui/styles/theme.py
 """
 Application theme and styling.
+NOW WITH DARK MODE SUPPORT! 🌙
 """
 
 # Current theme state
-CURRENT_THEME = 'light'
+_current_theme = "light"
 
-# Light mode colors
+# Light Mode Colors
 LIGHT_COLORS = {
-    'bg_primary': '#4A90E2',
-    'bg_secondary': '#E8F4FD',
-    'sidebar_bg': '#3A7BC8',
-    'text_dark': '#2D3748',
-    'text_muted': '#718096',
-    'text_white': '#FFFFFF',
-    'accent_blue': '#4A90E2',
-    'accent_light': '#E5E7EB',
-    'bg_card': '#FFFFFF',
-    'card_bg': '#FFFFFF',  # Alternative key name
-    'border_light': '#E2E8F0',
-    'success': '#48BB78',
-    'warning': '#ED8936',
-    'danger': '#F56565',
+    'bg_primary': '#4A90E2',      # Main blue background
+    'bg_secondary': '#E8F4FD',    # Light blue
+    'bg_card': '#FFFFFF',         # White cards
+    'card_bg': '#FFFFFF',         # Card background
+    'text_dark': '#2D3748',       # Dark text
+    'text_white': '#FFFFFF',      # White text
+    'text_muted': '#718096',      # Gray text
+    'accent_blue': '#4A90E2',     # Blue accent
+    'accent_light': '#E8F4FD',    # Light blue accent
+    'border_light': '#E2E8F0',    # Light border
 }
 
-# Dark mode colors
+# Dark Mode Colors
 DARK_COLORS = {
-    'bg_primary': '#1A202C',
-    'bg_secondary': '#2D3748',
-    'sidebar_bg': '#2D3748',
-    'text_dark': '#F7FAFC',
-    'text_muted': '#A0AEC0',
-    'text_white': '#F7FAFC',
-    'accent_blue': '#63B3ED',
-    'accent_light': '#E5E7EB',
-    'bg_card': '#2D3748',
-    'card_bg': '#2D3748',  # Alternative key name
-    'border_light': '#4A5568',
-    'success': '#48BB78',
-    'warning': '#ED8936',
-    'danger': '#F56565',
+    'bg_primary': '#1A202C',      # Dark blue-gray
+    'bg_secondary': '#2D3748',    # Darker gray
+    'bg_card': '#2D3748',         # Dark card
+    'card_bg': '#2D3748',         # Card background
+    'text_dark': '#E2E8F0',       # Light text (reversed)
+    'text_white': '#FFFFFF',      # White text
+    'text_muted': '#A0AEC0',      # Light gray text
+    'accent_blue': '#63B3ED',     # Lighter blue for dark mode
+    'accent_light': '#4A5568',    # Dark gray accent
+    'border_light': '#4A5568',    # Dark border
 }
 
-# Active colors (starts with light)
+# Start with light mode
 COLORS = LIGHT_COLORS.copy()
 
-# Fonts
-FONTS = {
-    'title': ('Segoe UI', 24, 'bold'),
-    'heading': ('Segoe UI', 14, 'bold'),
-    'subheading': ('Segoe UI', 12, 'bold'),
-    'body': ('Segoe UI', 11),
-    'body_bold': ('Segoe UI', 11, 'bold'),
-    'small': ('Segoe UI', 9),
-    'temperature': ('Segoe UI', 48, 'bold'),
-    'large': ('Segoe UI', 18, 'bold'),
-}
-
-# Dimensions
+# Dimensions (same for both themes)
 DIMENSIONS = {
-    'padding': 20,
-    'border_radius': 10,
     'window_width': 1400,
     'window_height': 800,
-    'sidebar_width': 100,
+    'padding': 20,
+    'card_padding': 15,
+}
+
+# Fonts (same for both themes)
+FONTS = {
+    'title': ('Segoe UI', 32, 'bold'),
+    'heading': ('Segoe UI', 18, 'bold'),
+    'subheading': ('Segoe UI', 16),
+    'body': ('Segoe UI', 13),
+    'body_bold': ('Segoe UI', 13, 'bold'),
+    'small': ('Segoe UI', 11),
+    'temperature': ('Segoe UI', 48, 'bold'),
 }
 
 def toggle_theme():
-    """Switch between light and dark mode"""
-    global CURRENT_THEME, COLORS
+    """
+    Toggle between light and dark mode.
     
-    if CURRENT_THEME == 'light':
-        CURRENT_THEME = 'dark'
+    Returns:
+        str: New theme name ('light' or 'dark')
+    """
+    global _current_theme, COLORS
+    
+    if _current_theme == "light":
+        _current_theme = "dark"
+        COLORS.clear()
         COLORS.update(DARK_COLORS)
     else:
-        CURRENT_THEME = 'light'
+        _current_theme = "light"
+        COLORS.clear()
         COLORS.update(LIGHT_COLORS)
     
-    return CURRENT_THEME
+    return _current_theme
 
 def get_current_theme():
-    """Get current theme name"""
-    return CURRENT_THEME
+    """Get the current theme name."""
+    return _current_theme
+
+def is_dark_mode():
+    """Check if dark mode is active."""
+    return _current_theme == "dark"

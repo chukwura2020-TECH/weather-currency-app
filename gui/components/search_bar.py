@@ -1,66 +1,84 @@
 # gui/components/search_bar.py
 """
-Search bar component - now with WORKING search!
+City search bar component.
 """
 import tkinter as tk
-from gui.styles.theme import COLORS, FONTS
+from gui.styles.theme import COLORS, FONTS, DIMENSIONS
 
 class SearchBar(tk.Frame):
-    def __init__(self, parent, search_callback):
+    """Search input for cities"""
+    
+    def __init__(self, parent, on_search_callback):
         super().__init__(parent, bg=COLORS['bg_primary'])
         
-        self.search_callback = search_callback  # Function to call when searching
+        self.on_search = on_search_callback
+        
         self._create_widgets()
     
     def _create_widgets(self):
-        """Create search input with icon"""
+        """Create search input"""
         
-        # Container with white background
-        search_container = tk.Frame(self, bg='white', height=45)
-        search_container.pack(fill="x", padx=20, pady=20)
-        search_container.pack_propagate(False)
+        # Container
+        search_frame = tk.Frame(self, bg='white')
+        search_frame.pack(fill="x", padx=20, pady=20)
         
         # Search icon
-        icon = tk.Label(
-            search_container,
+        tk.Label(
+            search_frame,
             text="🔍",
             bg='white',
             font=('Segoe UI', 16)
-        )
-        icon.pack(side="left", padx=(15, 5))
+        ).pack(side="left", padx=(15, 10))
         
-        # Search entry field
+        # Search entry
         self.entry = tk.Entry(
-            search_container,
+            search_frame,
             bg='white',
             fg=COLORS['text_dark'],
-            font=FONTS['body'],
+            font=FONTS['subheading'],
             bd=0,
             relief="flat"
         )
-        self.entry.pack(side="left", fill="both", expand=True, padx=5)
-        self.entry.insert(0, "Search for location")
+        self.entry.pack(side="left", fill="x", expand=True, ipady=10)
+        self.entry.insert(0, "Search for a city...")
         
-        # Bind Enter key to search
-        self.entry.bind("<Return>", self._on_search)
+        # Bind events
+        self.entry.bind('<Return>', self._on_enter)
+        self.entry.bind('<FocusIn>', self._on_focus_in)
+        self.entry.bind('<FocusOut>', self._on_focus_out)
         
-        # Placeholder behavior
-        self.entry.bind("<FocusIn>", self._clear_placeholder)
-        self.entry.bind("<FocusOut>", self._restore_placeholder)
+        # Search button
+        search_btn = tk.Label(
+            search_frame,
+            text="→",
+            bg='white',
+            fg=COLORS['accent_blue'],
+            font=('Segoe UI', 20),
+            cursor='hand2',
+            padx=15
+        )
+        search_btn.pack(side="right")
+        search_btn.bind('<Button-1>', lambda e: self._on_enter())
     
-    def _clear_placeholder(self, event):
-        if self.entry.get() == "Search for location":
+    def _on_focus_in(self, event):
+        """Clear placeholder on focus"""
+        if self.entry.get() == "Search for a city...":
             self.entry.delete(0, tk.END)
+            self.entry.config(fg=COLORS['text_dark'])
     
-    def _restore_placeholder(self, event):
+    def _on_focus_out(self, event):
+        """Restore placeholder if empty"""
         if not self.entry.get():
-            self.entry.insert(0, "Search for location")
+            self.entry.insert(0, "Search for a city...")
+            self.entry.config(fg=COLORS['text_muted'])
     
-    def _on_search(self, event):
-        """Called when user presses Enter"""
-        query = self.entry.get().strip()
+    def _on_enter(self, event=None):
+        """Handle search on Enter key"""
+        city = self.entry.get().strip()
         
-        # Don't search if it's the placeholder or empty
-        if query and query != "Search for location":
-            print(f"Searching for: {query}")
-            self.search_callback(query)  # Call the callback function
+        if city and city != "Search for a city...":
+            self.on_search(city)
+    
+    def update_colors(self):
+        """Update colors when theme changes"""
+        self.config(bg=COLORS['bg_primary'])
