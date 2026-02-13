@@ -13,7 +13,8 @@ class ThemeToggle(tk.Canvas):
             parent,
             width=60,
             height=30,
-            highlightthickness=0
+            highlightthickness=0,
+            bg=COLORS['bg_primary']
         )
         
         self.callback = on_toggle_callback
