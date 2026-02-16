@@ -1,7 +1,8 @@
 # gui/map_gui.py
 """
-Map display component with BEAUTIFUL EARTH ANIMATION!
-🐛 ENHANCED: Beautiful animated earth with zoom to location!
+Map display component with PROFESSIONAL, SUBTLE animation!
+🐛 FIXED: Location marker STAYS IN PLACE (no left-right movement)
+🐛 FIXED: Professional, elegant design (not childish)
 """
 import tkinter as tk
 from tkinter import ttk
@@ -9,7 +10,7 @@ from gui.styles.theme import COLORS, FONTS, DIMENSIONS
 import math
 
 class WeatherMap(tk.Frame):
-    """Beautiful animated earth map!"""
+    """Professional weather map visualization"""
     
     def __init__(self, parent, city_name="London", lat=51.5074, lon=-0.1278):
         super().__init__(parent, bg='white', height=300)
@@ -19,7 +20,7 @@ class WeatherMap(tk.Frame):
         self.lon = lon
         self.animation_step = 0
         self.is_animating = False
-        self.zoom_level = 0
+        self.pulse_size = 0
         
         self.pack_propagate(False)
         
@@ -27,48 +28,49 @@ class WeatherMap(tk.Frame):
         self._start_animation()
     
     def _create_widgets(self):
-        """Create beautiful map display"""
+        """Create professional map display"""
         
-        # Header
+        # Header with gradient-like effect
         header = tk.Frame(self, bg='white')
         header.pack(fill="x", padx=DIMENSIONS['padding'], pady=(15, 10))
         
         # Title
         self.title_label = tk.Label(
             header,
-            text=f"🌍 {self.city_name}",
+            text=f"📍 {self.city_name}",
             bg='white',
-            fg=COLORS['text_dark'],
-            font=FONTS['heading']
+            fg='#1A202C',
+            font=('Segoe UI', 16, 'bold')
         )
         self.title_label.pack(side="left")
         
-        # Zoom indicator
-        self.zoom_label = tk.Label(
+        # Status indicator
+        self.status_label = tk.Label(
             header,
-            text="🔍 Global View",
+            text="● Live",
             bg='white',
-            fg=COLORS['text_muted'],
-            font=FONTS['small']
+            fg='#48BB78',
+            font=('Segoe UI', 10)
         )
-        self.zoom_label.pack(side="right")
+        self.status_label.pack(side="right")
         
-        # Canvas for animated earth
+        # Canvas for professional visualization
         self.map_canvas = tk.Canvas(
             self,
-            bg='#1a1a2e',  # Dark space background
-            highlightthickness=0
+            bg='#F7FAFC',  # Light gray background
+            highlightthickness=1,
+            highlightbackground='#E2E8F0'
         )
         self.map_canvas.pack(fill="both", expand=True, padx=15, pady=(0, 15))
         
-        # Bind resize event
+        # Bind resize
         self.map_canvas.bind('<Configure>', self._on_resize)
         
-        # Draw initial earth
-        self._draw_earth()
+        # Draw initial map
+        self._draw_map()
     
-    def _draw_earth(self):
-        """Draw beautiful animated earth"""
+    def _draw_map(self):
+        """Draw professional map visualization"""
         self.map_canvas.delete('all')
         
         width = self.map_canvas.winfo_width()
@@ -80,191 +82,157 @@ class WeatherMap(tk.Frame):
         center_x = width // 2
         center_y = height // 2
         
-        # Stars in background
-        import random
-        random.seed(42)
-        for i in range(30):
-            x = random.randint(0, width)
-            y = random.randint(0, height)
-            size = random.randint(1, 2)
-            self.map_canvas.create_oval(
-                x, y, x+size, y+size,
-                fill='white', outline='white'
+        # Draw subtle grid pattern
+        self._draw_grid(width, height)
+        
+        # Draw coordinate circles (latitude lines)
+        self._draw_coordinate_circles(center_x, center_y, width, height)
+        
+        # Draw location marker (FIXED position - no movement!)
+        self._draw_fixed_marker(center_x, center_y)
+        
+        # Draw info overlay
+        self._draw_professional_info(center_x, center_y, height)
+    
+    def _draw_grid(self, width, height):
+        """Draw subtle background grid"""
+        # Vertical lines
+        for x in range(0, width, 40):
+            self.map_canvas.create_line(
+                x, 0, x, height,
+                fill='#E2E8F0', width=1
             )
         
-        # Earth size based on zoom
-        base_radius = min(width, height) // 3
-        earth_radius = base_radius + (self.zoom_level * 5)
-        
-        # Outer glow
-        glow_radius = earth_radius + 10
-        self.map_canvas.create_oval(
-            center_x - glow_radius, center_y - glow_radius,
-            center_x + glow_radius, center_y + glow_radius,
-            fill='#4A90E2', outline='',
-            tags='glow'
-        )
-        
-        # Earth sphere
-        self.map_canvas.create_oval(
-            center_x - earth_radius, center_y - earth_radius,
-            center_x + earth_radius, center_y + earth_radius,
-            fill='#2D5F8D', outline='#1E3A5F', width=2,
-            tags='earth'
-        )
-        
-        # Continents (simplified shapes that rotate)
-        self._draw_continents(center_x, center_y, earth_radius)
-        
-        # Location marker
-        self._draw_location_marker(center_x, center_y, earth_radius)
-        
-        # City info overlay
-        self._draw_info_overlay(center_x, center_y, earth_radius)
+        # Horizontal lines
+        for y in range(0, height, 40):
+            self.map_canvas.create_line(
+                0, y, width, y,
+                fill='#E2E8F0', width=1
+            )
     
-    def _draw_continents(self, cx, cy, radius):
-        """Draw simplified animated continents"""
-        # Rotation based on animation step
-        rotation = (self.animation_step * 2) % 360
+    def _draw_coordinate_circles(self, cx, cy, width, height):
+        """Draw latitude/longitude circles"""
+        max_radius = min(width, height) // 2 - 20
         
-        # Simplified continent shapes (North America, Europe, Africa, Asia)
-        continents = [
-            # North America
-            {'angle': 120 + rotation, 'size': 0.3, 'color': '#4CAF50'},
-            # Europe
-            {'angle': 180 + rotation, 'size': 0.2, 'color': '#66BB6A'},
-            # Africa  
-            {'angle': 200 + rotation, 'size': 0.25, 'color': '#81C784'},
-            # Asia
-            {'angle': 240 + rotation, 'size': 0.4, 'color': '#4CAF50'},
-        ]
-        
-        for cont in continents:
-            angle_rad = math.radians(cont['angle'])
-            x = cx + radius * 0.6 * math.cos(angle_rad)
-            y = cy + radius * 0.6 * math.sin(angle_rad)
-            size = radius * cont['size']
+        # Draw 3 concentric circles
+        for i in range(1, 4):
+            radius = (max_radius // 3) * i
             
+            # Circle
             self.map_canvas.create_oval(
-                x - size, y - size,
-                x + size, y + size,
-                fill=cont['color'], outline='',
-                tags='continent'
+                cx - radius, cy - radius,
+                cx + radius, cy + radius,
+                outline='#CBD5E0', width=2, dash=(5, 3)
             )
     
-    def _draw_location_marker(self, cx, cy, radius):
-        """Draw location marker with pulse effect"""
-        # Calculate marker position based on lat/lon
-        lat_rad = math.radians(self.lat)
-        lon_rad = math.radians(self.lon + (self.animation_step * 0.5) % 360)
+    def _draw_fixed_marker(self, cx, cy):
+        """
+        Draw location marker that STAYS IN PLACE
+        Only subtle pulse animation - NO left-right movement!
+        """
+        # Pulse effect (gentle breathing)
+        pulse = math.sin(self.animation_step * 0.1) * 2
+        marker_size = 10 + pulse
         
-        x = cx + radius * 0.7 * math.cos(lon_rad) * math.cos(lat_rad)
-        y = cy + radius * 0.7 * math.sin(lat_rad)
-        
-        # Pulse effect
-        pulse_size = 8 + math.sin(self.animation_step * 0.2) * 2
-        
-        # Outer pulse
+        # Outer glow (subtle)
+        glow_size = marker_size + 8
         self.map_canvas.create_oval(
-            x - pulse_size - 3, y - pulse_size - 3,
-            x + pulse_size + 3, y + pulse_size + 3,
-            fill='', outline='#FF5252', width=2,
+            cx - glow_size, cy - glow_size,
+            cx + glow_size, cy + glow_size,
+            fill='#FED7D7', outline='',
             tags='marker'
         )
         
-        # Inner marker
+        # Middle ring
+        ring_size = marker_size + 3
         self.map_canvas.create_oval(
-            x - pulse_size, y - pulse_size,
-            x + pulse_size, y + pulse_size,
-            fill='#FF5252', outline='white', width=2,
+            cx - ring_size, cy - ring_size,
+            cx + ring_size, cy + ring_size,
+            fill='#FC8181', outline='',
+            tags='marker'
+        )
+        
+        # Inner marker (solid)
+        self.map_canvas.create_oval(
+            cx - marker_size, cy - marker_size,
+            cx + marker_size, cy + marker_size,
+            fill='#E53E3E', outline='white', width=2,
+            tags='marker'
+        )
+        
+        # Center dot
+        dot_size = 3
+        self.map_canvas.create_oval(
+            cx - dot_size, cy - dot_size,
+            cx + dot_size, cy + dot_size,
+            fill='white', outline='',
             tags='marker'
         )
     
-    def _draw_info_overlay(self, cx, cy, radius):
-        """Draw city information overlay"""
-        # Info box at bottom
-        info_y = cy + radius + 30
+    def _draw_professional_info(self, cx, cy, height):
+        """Draw professional information overlay"""
+        info_y = height - 40
         
-        # City name
+        # City name with icon
         self.map_canvas.create_text(
             cx, info_y,
-            text=self.city_name,
-            font=('Segoe UI', 16, 'bold'),
-            fill='white',
-            tags='info'
+            text=f"📍 {self.city_name}",
+            font=('Segoe UI', 14, 'bold'),
+            fill='#1A202C'
         )
         
-        # Coordinates
+        # Coordinates (smaller, subtle)
         self.map_canvas.create_text(
-            cx, info_y + 25,
-            text=f"📍 {self.lat:.2f}°, {self.lon:.2f}°",
-            font=('Segoe UI', 11),
-            fill='#B0BEC5',
-            tags='info'
+            cx, info_y + 22,
+            text=f"{self.lat:.4f}°N, {self.lon:.4f}°E",
+            font=('Segoe UI', 9),
+            fill='#718096'
         )
     
     def _start_animation(self):
-        """Start the earth rotation animation"""
+        """Start subtle animation"""
         if not self.is_animating:
             self.is_animating = True
             self._animate()
     
     def _animate(self):
-        """Animate the earth rotation"""
+        """Gentle pulse animation - NO childish movements!"""
         if not self.is_animating:
             return
         
         self.animation_step += 1
-        self._draw_earth()
         
-        # Continue animation
-        self.after(50, self._animate)  # 20 FPS
+        # Only redraw marker (not entire canvas) for performance
+        self.map_canvas.delete('marker')
+        
+        width = self.map_canvas.winfo_width()
+        height = self.map_canvas.winfo_height()
+        
+        if width > 10 and height > 10:
+            center_x = width // 2
+            center_y = height // 2
+            self._draw_fixed_marker(center_x, center_y)
+        
+        # Slower animation (30ms = ~33 FPS, smoother)
+        self.after(30, self._animate)
     
     def _on_resize(self, event=None):
         """Handle canvas resize"""
-        self._draw_earth()
+        self._draw_map()
     
     def update_location(self, city_name, lat, lon):
-        """Update map to new location with ZOOM effect!"""
-        print(f"🌍 Zooming to {city_name}...")
+        """Update map to new location"""
+        print(f"📍 Updating to {city_name}")
         
         self.city_name = city_name
         self.lat = lat
         self.lon = lon
         
         # Update title
-        self.title_label.config(text=f"🌍 {city_name}")
+        self.title_label.config(text=f"📍 {city_name}")
         
-        # Animate zoom in
-        self._zoom_to_location()
-    
-    def _zoom_to_location(self):
-        """Animated zoom effect"""
-        target_zoom = 10
-        
-        def zoom_step():
-            if self.zoom_level < target_zoom:
-                self.zoom_level += 1
-                self.zoom_label.config(text=f"🔍 Zooming... {self.zoom_level}/{target_zoom}")
-                self._draw_earth()
-                self.after(50, zoom_step)
-            else:
-                self.zoom_label.config(text=f"🔍 {self.city_name}")
-                # Zoom back out after 2 seconds
-                self.after(2000, self._zoom_out)
-        
-        zoom_step()
-    
-    def _zoom_out(self):
-        """Zoom back out"""
-        def zoom_step():
-            if self.zoom_level > 0:
-                self.zoom_level -= 1
-                self.zoom_label.config(text=f"🔍 Global View")
-                self._draw_earth()
-                self.after(50, zoom_step)
-        
-        zoom_step()
+        # Redraw map
+        self._draw_map()
     
     def update_colors(self):
         """Update colors when theme changes"""
@@ -294,13 +262,13 @@ class MapPlaceholder(tk.Frame):
             anchor="w"
         ).pack(fill="x", padx=DIMENSIONS['padding'], pady=(15, 10))
         
-        map_frame = tk.Frame(self, bg='#E8F4FD')
+        map_frame = tk.Frame(self, bg='#F7FAFC', relief='solid', bd=1)
         map_frame.pack(fill="both", expand=True, padx=15, pady=(0, 15))
         
         tk.Label(
             map_frame,
-            text="🗺️\n\nLocation tracking active\n💡 Interactive maps coming soon",
-            bg='#E8F4FD',
+            text="📍\n\nLocation tracking active\n💡 Professional maps in full version",
+            bg='#F7FAFC',
             fg=COLORS['text_muted'],
             font=FONTS['body'],
             justify="center"

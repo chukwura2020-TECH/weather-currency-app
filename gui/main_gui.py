@@ -1,15 +1,12 @@
 # gui/main_gui.py
 """
-Main application window - FINAL PERFECT VERSION!
-🐛 FIXED: Colors NEVER faint
-🐛 FIXED: Uniform dark mode
-🐛 FIXED: Instant response (no delay)
-🐛 FIXED: All features working
+Main application window - FINAL AGGRESSIVE VERSION!
+🐛 FIXED: Colors NEVER EVER go faint - FORCED update system!
 """
 from gui.components.alert_banner import AlertBanner
 import tkinter as tk
 from tkinter import ttk
-from gui.styles.theme import COLORS, DIMENSIONS, FONTS, toggle_theme
+from gui.styles.theme import COLORS, DIMENSIONS, FONTS, toggle_theme, is_dark_mode
 from gui.components.sidebar import Sidebar
 from gui.components.theme_toggle import ThemeToggle
 from gui.currency_gui import CurrencyConverter
@@ -28,6 +25,7 @@ class WeatherApp:
         # Set background color
         self.root.configure(bg=COLORS['bg_primary'])
         
+        self.current_view_name = "weather"
         self._create_layout()
     
     def _create_layout(self):
@@ -72,89 +70,100 @@ class WeatherApp:
         self.switch_view("weather")
     
     def _on_theme_toggle(self, new_theme):
-        """Handle theme toggle - PERFECT COLOR UPDATE!"""
-        print(f"🎨 Theme switched to: {new_theme}")
+        """
+        Handle theme toggle - NUCLEAR OPTION!
+        DESTROYS and RECREATES everything to force color update!
+        """
+        print(f"🎨 AGGRESSIVE theme switch to: {new_theme}")
         
-        # Force immediate update
-        self.root.update_idletasks()
+        # Get current view name
+        current_view = self.current_view_name
         
-        # Update ALL colors THOROUGHLY
-        self._update_all_colors()
+        # NUCLEAR OPTION: Destroy and recreate ENTIRE view!
+        if self.current_view:
+            self.current_view.destroy()
         
-        print("✅ Colors updated successfully!")
+        # Force immediate recreation
+        self.root.after(1, lambda: self._force_complete_refresh(current_view))
     
-    def _update_all_colors(self):
-        """Update EVERY widget's colors - No faint colors!"""
+    def _force_complete_refresh(self, view_name):
+        """COMPLETELY refresh the view with new colors"""
         from gui.styles.theme import COLORS
         
-        # 1. Root window
+        print(f"🔥 FORCING complete refresh with new colors")
+        print(f"   text_dark is now: {COLORS['text_dark']}")
+        print(f"   bg_card is now: {COLORS['bg_card']}")
+        
+        # Update root
         self.root.config(bg=COLORS['bg_primary'])
         
-        # 2. Sidebar
-        self._deep_update(self.sidebar, COLORS['bg_primary'])
+        # Update sidebar
+        self.sidebar.config(bg=COLORS['bg_primary'])
+        self._nuclear_update(self.sidebar)
         
-        # 3. Favorites panel
+        # Update favorites
         self.favorites.config(bg=COLORS['bg_card'])
-        self._deep_update(self.favorites, COLORS['bg_card'])
+        self._nuclear_update(self.favorites)
         
-        # 4. Content frame
+        # Update content frame
         self.content_frame.config(bg=COLORS['bg_primary'])
         
-        # 5. Current view
-        if self.current_view and hasattr(self.current_view, 'update_colors'):
-            self.current_view.update_colors()
-        elif self.current_view:
-            self._deep_update(self.current_view, COLORS['bg_primary'])
-        
-        # 6. Theme toggle
-        if hasattr(self, 'theme_toggle'):
-            self.theme_toggle.update_colors()
+        # Recreate current view with NEW colors
+        self.switch_view(view_name)
         
         # Force render
         self.root.update()
+        
+        print(f"✅ Refresh complete!")
     
-    def _deep_update(self, widget, default_bg):
-        """Recursively update widget colors - THOROUGH!"""
+    def _nuclear_update(self, widget):
+        """
+        NUCLEAR color update - updates EVERYTHING recursively
+        Uses CURRENT values from COLORS dict
+        """
         from gui.styles.theme import COLORS
         
         try:
-            widget_type = type(widget).__name__
-            
-            # Update Frame backgrounds
+            # Update Frame
             if isinstance(widget, tk.Frame):
-                current_bg = widget.cget('bg')
-                # Only update if it's a theme color
-                if current_bg in ['#4A90E2', '#FFFFFF', '#E8F4FD', '#1A202C', '#2D3748', '#F7FAFC']:
-                    widget.config(bg=default_bg)
+                widget.config(bg=COLORS['bg_primary'])
             
-            # Update Label colors
+            # Update Label - FORCE new colors
             elif isinstance(widget, tk.Label):
-                current_bg = widget.cget('bg')
-                if current_bg in ['#4A90E2', '#FFFFFF', '#E8F4FD', '#1A202C', '#2D3748', '#F7FAFC']:
-                    widget.config(
-                        bg=COLORS['bg_card'],
-                        fg=COLORS['text_dark']
-                    )
+                # Get current background
+                try:
+                    current_bg = widget.cget('bg')
+                    # If it's ANY theme color, update it
+                    if current_bg.startswith('#'):
+                        widget.config(
+                            bg=COLORS['bg_card'],
+                            fg=COLORS['text_dark']
+                        )
+                except:
+                    pass
             
             # Update Canvas
             elif isinstance(widget, tk.Canvas):
                 widget.config(bg=COLORS['bg_card'])
             
-            # Recursively update children
+            # Recursively update ALL children
             for child in widget.winfo_children():
-                self._deep_update(child, default_bg)
+                self._nuclear_update(child)
                 
         except Exception as e:
-            pass  # Skip widgets that can't be updated
+            pass
     
     def switch_view(self, view_name):
-        """Switch between views - INSTANT!"""
+        """Switch between views"""
+        
+        # Save view name
+        self.current_view_name = view_name
         
         # Clear current view
         if self.current_view:
             self.current_view.destroy()
         
-        # Load new view
+        # Load new view with CURRENT colors
         if view_name == "weather":
             from gui.weather_dashboard import WeatherDashboard
             self.current_view = WeatherDashboard(self.content_frame)
