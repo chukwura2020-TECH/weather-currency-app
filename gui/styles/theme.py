@@ -1,44 +1,46 @@
 # gui/styles/theme.py
 """
 Application theme and styling.
-NOW WITH DARK MODE SUPPORT! 🌙
+🐛 FIXED: Bold colors (never faint!)
+🐛 FIXED: Uniform dark mode colors
+🐛 FIXED: Better contrast everywhere
 """
 
 # Current theme state
 _current_theme = "light"
 
-# Light Mode Colors
+# Light Mode Colors - BOLD AND CLEAR!
 LIGHT_COLORS = {
-    'bg_primary': '#4A90E2',      # Main blue background
+    'bg_primary': '#4A90E2',      # Bright blue background
     'bg_secondary': '#E8F4FD',    # Light blue
-    'bg_card': '#FFFFFF',         # White cards
+    'bg_card': '#FFFFFF',         # Pure white cards
     'card_bg': '#FFFFFF',         # Card background
-    'text_dark': '#2D3748',       # Dark text
-    'text_white': '#FFFFFF',      # White text
-    'text_muted': '#718096',      # Gray text
-    'accent_blue': '#4A90E2',     # Blue accent
-    'accent_light': '#E8F4FD',    # Light blue accent
-    'border_light': '#E2E8F0',    # Light border
+    'text_dark': '#1A202C',       # VERY dark text (not faint!)
+    'text_white': '#FFFFFF',      # Pure white text
+    'text_muted': '#4A5568',      # Medium gray (not too faint!)
+    'accent_blue': '#4A90E2',     # Bright blue
+    'accent_light': '#E8F4FD',    # Light blue
+    'border_light': '#CBD5E0',    # Visible border
 }
 
-# Dark Mode Colors
+# Dark Mode Colors - BOLD AND UNIFORM!
 DARK_COLORS = {
-    'bg_primary': '#1A202C',      # Dark blue-gray
-    'bg_secondary': '#2D3748',    # Darker gray
-    'bg_card': '#2D3748',         # Dark card
-    'card_bg': '#2D3748',         # Card background
-    'text_dark': '#E2E8F0',       # Light text (reversed)
-    'text_white': '#FFFFFF',      # White text
-    'text_muted': '#A0AEC0',      # Light gray text
-    'accent_blue': '#63B3ED',     # Lighter blue for dark mode
-    'accent_light': '#4A5568',    # Dark gray accent
-    'border_light': '#4A5568',    # Dark border
+    'bg_primary': '#1A202C',      # Dark blue-gray (uniform!)
+    'bg_secondary': '#2D3748',    # Slightly lighter gray
+    'bg_card': '#2D3748',         # Same as secondary (uniform!)
+    'card_bg': '#2D3748',         # Card background (uniform!)
+    'text_dark': '#F7FAFC',       # BRIGHT white text (not faint!)
+    'text_white': '#FFFFFF',      # Pure white
+    'text_muted': '#CBD5E0',      # Light gray (visible in dark!)
+    'accent_blue': '#63B3ED',     # Bright blue for dark mode
+    'accent_light': '#4A5568',    # Dark accent
+    'border_light': '#4A5568',    # Visible dark border
 }
 
 # Start with light mode
 COLORS = LIGHT_COLORS.copy()
 
-# Dimensions (same for both themes)
+# Dimensions
 DIMENSIONS = {
     'window_width': 1400,
     'window_height': 800,
@@ -46,15 +48,15 @@ DIMENSIONS = {
     'card_padding': 15,
 }
 
-# Fonts (same for both themes)
+# Fonts
 FONTS = {
-    'title': ('Segoe UI', 32, 'bold'),
-    'heading': ('Segoe UI', 18, 'bold'),
-    'subheading': ('Segoe UI', 16),
-    'body': ('Segoe UI', 13),
-    'body_bold': ('Segoe UI', 13, 'bold'),
-    'small': ('Segoe UI', 11),
-    'temperature': ('Segoe UI', 48, 'bold'),
+    'title': ('Segoe UI', 28, 'bold'),  # Slightly smaller
+    'heading': ('Segoe UI', 16, 'bold'),
+    'subheading': ('Segoe UI', 14),
+    'body': ('Segoe UI', 12),
+    'body_bold': ('Segoe UI', 12, 'bold'),
+    'small': ('Segoe UI', 10),
+    'temperature': ('Segoe UI', 42, 'bold'),  # Smaller
 }
 
 def toggle_theme():
@@ -74,6 +76,9 @@ def toggle_theme():
         _current_theme = "light"
         COLORS.clear()
         COLORS.update(LIGHT_COLORS)
+    
+    print(f"Theme switched to: {_current_theme}")
+    print(f"Colors now: {COLORS}")
     
     return _current_theme
 
