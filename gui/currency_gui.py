@@ -1,10 +1,7 @@
 # gui/currency_gui.py
 """
 Currency converter interface.
-🐛 ULTRA COMPACT - Fits ANY screen size!
-🐛 FIXED: Better colors (not faint)
-🐛 FIXED: Result box and history ALWAYS visible
-🐛 FIXED: No delay, instant response
+🐛 FIXED: History box now WIDER and CENTERED!
 """
 import csv
 from datetime import datetime
@@ -15,7 +12,7 @@ from gui.styles.theme import COLORS, FONTS
 from api.currency_api import CurrencyAPI
 
 class CurrencyConverter(tk.Frame):
-    """Currency converter view - ULTRA COMPACT VERSION"""
+    """Currency converter view"""
     
     def __init__(self, parent):
         super().__init__(parent, bg=COLORS['bg_primary'])
@@ -26,19 +23,19 @@ class CurrencyConverter(tk.Frame):
         self._create_widgets()
     
     def _create_widgets(self):
-        """Create ULTRA COMPACT currency converter"""
+        """Create currency converter"""
         
-        # Title - TINY padding
+        # Title
         title = tk.Label(
             self,
             text="💱 Currency Converter",
             bg=COLORS['bg_primary'],
             fg=COLORS['text_white'],
-            font=('Segoe UI', 20, 'bold')  # Smaller from 32
+            font=('Segoe UI', 20, 'bold')
         )
-        title.pack(pady=(10, 10))  # TINY from (20, 15)
+        title.pack(pady=(10, 10))
         
-        # Create scrollable canvas for all content
+        # Create scrollable canvas
         canvas = tk.Canvas(self, bg=COLORS['bg_primary'], highlightthickness=0)
         scrollbar = ttk.Scrollbar(self, orient="vertical", command=canvas.yview)
         scrollable_frame = tk.Frame(canvas, bg=COLORS['bg_primary'])
@@ -54,27 +51,30 @@ class CurrencyConverter(tk.Frame):
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
         
-        # Main converter card - VERY COMPACT
-        converter_card = tk.Frame(scrollable_frame, bg='#FFFFFF')  # Solid white (not faint!)
-        converter_card.pack(padx=20, pady=5, fill="x")  # Tiny padding
+        # Main converter card - CENTERED!
+        converter_container = tk.Frame(scrollable_frame, bg=COLORS['bg_primary'])
+        converter_container.pack(fill="x", pady=5)
         
-        # Container - MINIMAL padding
+        converter_card = tk.Frame(converter_container, bg='#FFFFFF')
+        converter_card.pack(padx=100, fill="x")  # CENTERED with padding
+        
+        # Container
         container = tk.Frame(converter_card, bg='#FFFFFF')
-        container.pack(fill="x", padx=15, pady=15)  # Minimal
+        container.pack(fill="x", padx=15, pady=15)
         
-        # --- AMOUNT ---
+        # Amount
         tk.Label(
             container,
             text="Amount:",
             bg='#FFFFFF',
-            fg='#2D3748',  # DARK text (not faint!)
+            fg='#2D3748',
             font=('Segoe UI', 11, 'bold')
         ).pack(anchor="w", pady=(0, 3))
         
         self.amount_entry = tk.Entry(
             container,
-            bg='#EDF2F7',  # Light gray background
-            fg='#1A202C',  # VERY DARK text
+            bg='#EDF2F7',
+            fg='#1A202C',
             font=('Segoe UI', 13),
             bd=1,
             relief="solid"
@@ -83,7 +83,7 @@ class CurrencyConverter(tk.Frame):
         self.amount_entry.insert(0, "100")
         self.amount_entry.bind('<Return>', lambda e: self._convert())
         
-        # --- FROM CURRENCY ---
+        # From Currency
         tk.Label(
             container,
             text="From:",
@@ -101,12 +101,12 @@ class CurrencyConverter(tk.Frame):
         self.from_currency.pack(fill="x", ipady=4)
         self.from_currency.set("USD")
         
-        # --- SWAP BUTTON ---
+        # Swap button
         swap_btn = tk.Button(
             container,
             text="⇅ Swap",
-            bg='#4A90E2',  # BRIGHT blue
-            fg='#FFFFFF',  # Pure white text
+            bg='#4A90E2',
+            fg='#FFFFFF',
             font=('Segoe UI', 10, 'bold'),
             bd=0,
             padx=15,
@@ -117,7 +117,7 @@ class CurrencyConverter(tk.Frame):
         )
         swap_btn.pack(pady=5)
         
-        # --- TO CURRENCY ---
+        # To Currency
         tk.Label(
             container,
             text="To:",
@@ -135,12 +135,12 @@ class CurrencyConverter(tk.Frame):
         self.to_currency.pack(fill="x", ipady=4)
         self.to_currency.set("EUR")
         
-        # --- CONVERT BUTTON (BIG & VISIBLE!) ---
+        # Convert button
         convert_btn = tk.Button(
             container,
             text="Convert",
-            bg='#48BB78',  # BRIGHT green
-            fg='#FFFFFF',  # Pure white
+            bg='#48BB78',
+            fg='#FFFFFF',
             font=('Segoe UI', 13, 'bold'),
             bd=0,
             padx=25,
@@ -151,7 +151,7 @@ class CurrencyConverter(tk.Frame):
         )
         convert_btn.pack(pady=8)
         
-        # --- RESULT BOX (ALWAYS VISIBLE!) ---
+        # Result box
         result_box = tk.Frame(container, bg='#EDF2F7', relief='solid', bd=1)
         result_box.pack(fill="x", pady=5)
         
@@ -162,7 +162,7 @@ class CurrencyConverter(tk.Frame):
             result_inner,
             text="Enter amount and click Convert",
             bg='#EDF2F7',
-            fg='#2D3748',  # DARK text
+            fg='#2D3748',
             font=('Segoe UI', 14, 'bold'),
             wraplength=400
         )
@@ -172,15 +172,15 @@ class CurrencyConverter(tk.Frame):
             result_inner,
             text="",
             bg='#EDF2F7',
-            fg='#4A5568',  # Medium dark gray
+            fg='#4A5568',
             font=('Segoe UI', 10),
             wraplength=400
         )
         self.rate_label.pack()
         
-        # --- HISTORY SECTION (ALWAYS VISIBLE!) ---
+        # --- HISTORY SECTION - WIDER AND CENTERED! ---
         history_header = tk.Frame(scrollable_frame, bg=COLORS['bg_primary'])
-        history_header.pack(fill="x", padx=20, pady=(10, 5))
+        history_header.pack(fill="x", padx=100, pady=(15, 5))  # CENTERED
         
         tk.Label(
             history_header,
@@ -188,11 +188,14 @@ class CurrencyConverter(tk.Frame):
             bg=COLORS['bg_primary'],
             fg=COLORS['text_white'],
             font=('Segoe UI', 14, 'bold')
-        ).pack(anchor="w")
+        ).pack(anchor="center")  # CENTERED
         
-        # History container
-        self.history_container = tk.Frame(scrollable_frame, bg=COLORS['bg_primary'])
-        self.history_container.pack(fill="both", expand=True, padx=20, pady=(0, 10))
+        # History container - WIDER!
+        history_outer = tk.Frame(scrollable_frame, bg=COLORS['bg_primary'])
+        history_outer.pack(fill="x", padx=100, pady=(0, 10))  # CENTERED with 100px padding
+        
+        self.history_container = tk.Frame(history_outer, bg=COLORS['bg_primary'])
+        self.history_container.pack(fill="both", expand=True)
         
         # Initial empty message
         self.empty_label = tk.Label(
@@ -206,7 +209,7 @@ class CurrencyConverter(tk.Frame):
         self.empty_label.pack(pady=20)
     
     def _swap_currencies(self):
-        """Swap from and to currencies - INSTANT!"""
+        """Swap currencies"""
         from_val = self.from_currency.get()
         to_val = self.to_currency.get()
         
@@ -216,7 +219,7 @@ class CurrencyConverter(tk.Frame):
         self._convert()
     
     def _convert(self):
-        """Perform currency conversion - INSTANT RESPONSE!"""
+        """Perform conversion"""
         try:
             amount_str = self.amount_entry.get().strip()
             
@@ -234,26 +237,22 @@ class CurrencyConverter(tk.Frame):
                 self.rate_label.config(text="")
                 return
             
-            # Show converting (INSTANT update!)
             self.result_label.config(text="⏳ Converting...", fg='#4A5568')
             self.rate_label.config(text="")
             self.update_idletasks()
             
-            # Get conversion result
             result = self.api.convert_currency(amount, from_curr, to_curr)
             
             if result:
-                # Show result in BIG BOLD text
                 self.result_label.config(
                     text=f"✅ {result['converted']:,.2f} {result['to_currency']}",
-                    fg='#48BB78'  # BRIGHT green
+                    fg='#48BB78'
                 )
                 self.rate_label.config(
                     text=f"Rate: 1 {from_curr} = {result['rate']:.4f} {to_curr}",
                     fg='#4A5568'
                 )
                 
-                # Add to history
                 self._add_to_history(result)
                 self.conversion_history.append(result)
             else:
@@ -268,25 +267,24 @@ class CurrencyConverter(tk.Frame):
             self.rate_label.config(text=str(e), fg='#E53E3E')
     
     def _add_to_history(self, conversion_data):
-        """Add conversion to history display"""
-        # Remove empty message
+        """Add to history - WIDER boxes!"""
         if self.empty_label.winfo_exists():
             self.empty_label.destroy()
         
-        # Create history item with SOLID colors
+        # History item - WIDER!
         item = tk.Frame(self.history_container, bg='#FFFFFF', relief='solid', bd=1)
         item.pack(fill="x", pady=3)
         
         content = tk.Frame(item, bg='#FFFFFF')
-        content.pack(fill="x", padx=10, pady=8)
+        content.pack(fill="x", padx=15, pady=10)  # More padding
         
         # From
         tk.Label(
             content,
             text=f"{conversion_data['amount']} {conversion_data['from_currency']}",
             bg='#FFFFFF',
-            fg='#2D3748',  # DARK text
-            font=('Segoe UI', 11, 'bold')
+            fg='#2D3748',
+            font=('Segoe UI', 12, 'bold')  # Larger font
         ).pack(anchor="w")
         
         # Arrow
@@ -295,7 +293,7 @@ class CurrencyConverter(tk.Frame):
             text="↓",
             bg='#FFFFFF',
             fg='#4A5568',
-            font=('Segoe UI', 10)
+            font=('Segoe UI', 12)
         ).pack(anchor="w")
         
         # To
@@ -303,8 +301,8 @@ class CurrencyConverter(tk.Frame):
             content,
             text=f"{conversion_data['converted']:,.2f} {conversion_data['to_currency']}",
             bg='#FFFFFF',
-            fg='#48BB78',  # BRIGHT green
-            font=('Segoe UI', 12, 'bold')
+            fg='#48BB78',
+            font=('Segoe UI', 14, 'bold')  # Larger font
         ).pack(anchor="w")
         
         # Rate
@@ -313,8 +311,8 @@ class CurrencyConverter(tk.Frame):
             text=f"Rate: 1 {conversion_data['from_currency']} = {conversion_data['rate']:.4f} {conversion_data['to_currency']}",
             bg='#FFFFFF',
             fg='#718096',
-            font=('Segoe UI', 9)
-        ).pack(anchor="w", pady=(3, 0))
+            font=('Segoe UI', 10)
+        ).pack(anchor="w", pady=(5, 0))
         
         # Keep only last 5
         children = self.history_container.winfo_children()
@@ -322,6 +320,5 @@ class CurrencyConverter(tk.Frame):
             children[0].destroy()
     
     def update_colors(self):
-        """Update colors when theme changes"""
+        """Update colors"""
         self.config(bg=COLORS['bg_primary'])
-        # Note: This version uses SOLID colors that work in both themes

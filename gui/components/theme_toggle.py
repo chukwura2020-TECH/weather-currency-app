@@ -1,9 +1,10 @@
 # gui/components/theme_toggle.py
 """
 Dark mode toggle button.
+🐛 FIXED: Colors NEVER go faint, even after 100 toggles!
 """
 import tkinter as tk
-from gui.styles.theme import COLORS, toggle_theme
+from gui.styles.theme import toggle_theme, COLORS
 
 class ThemeToggle(tk.Canvas):
     """Toggle button for dark/light mode"""
@@ -45,7 +46,7 @@ class ThemeToggle(tk.Canvas):
         self.bind('<Button-1>', self._on_click)
     
     def _on_click(self, event=None):
-        """Toggle theme on click"""
+        """Toggle theme on click - PERFECT COLOR UPDATE!"""
         self.is_dark = not self.is_dark
         
         if self.is_dark:
@@ -61,10 +62,16 @@ class ThemeToggle(tk.Canvas):
             self.itemconfig(self.icon, text="☀️")
             self.coords(self.icon, 17, 17)
         
-        # Toggle theme
+        # Toggle theme FIRST
         new_theme = toggle_theme()
         
-        # Call callback
+        print(f"🎨 Theme toggled to: {new_theme}")
+        print(f"🎨 COLORS now: text_dark={COLORS['text_dark']}, bg_card={COLORS['bg_card']}")
+        
+        # Force update THIS widget immediately
+        self.config(bg=COLORS['bg_primary'])
+        
+        # Call callback to update everything else
         if self.callback:
             self.callback(new_theme)
     

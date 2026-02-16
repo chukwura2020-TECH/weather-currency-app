@@ -1,7 +1,7 @@
 # gui/components/summary_chart.py
 """
 Summary chart component for hourly weather.
-NOW WITH REAL GRAPHS! 📊
+🐛 FIXED: ALL tabs now work! (Hourly, Daily, Details)
 """
 import tkinter as tk
 from gui.styles.theme import COLORS, FONTS, DIMENSIONS
@@ -12,6 +12,7 @@ class SummaryChart(tk.Frame):
         super().__init__(parent, bg='white')
         
         self.hourly_data = []
+        self.current_tab = "Hourly"
         self._create_widgets()
     
     def _create_widgets(self):
@@ -29,14 +30,14 @@ class SummaryChart(tk.Frame):
             font=FONTS['heading']
         ).pack(side="left")
         
-        # Right side tabs
+        # Right side tabs - ALL FUNCTIONAL!
         tabs = tk.Frame(header, bg='white')
         tabs.pack(side="right")
         
-        self.tab_labels = {}
-        for i, label in enumerate(["Hourly", "Daily", "Details"]):
-            bg_color = COLORS['accent_blue'] if i == 0 else COLORS['accent_light']
-            fg_color = 'white' if i == 0 else COLORS['text_dark']
+        self.tab_buttons = {}
+        for label in ["Hourly", "Daily", "Details"]:
+            bg_color = COLORS['accent_blue'] if label == "Hourly" else COLORS['accent_light']
+            fg_color = 'white' if label == "Hourly" else COLORS['text_dark']
             
             tab = tk.Label(
                 tabs,
@@ -49,7 +50,8 @@ class SummaryChart(tk.Frame):
                 cursor='hand2'
             )
             tab.pack(side="left", padx=2)
-            self.tab_labels[label] = tab
+            tab.bind('<Button-1>', lambda e, l=label: self._switch_tab(l))
+            self.tab_buttons[label] = tab
         
         # Chart canvas
         self.chart_canvas = tk.Canvas(
@@ -60,40 +62,117 @@ class SummaryChart(tk.Frame):
         )
         self.chart_canvas.pack(fill="x", padx=DIMENSIONS['padding'], pady=(10, 15))
     
-    def update_chart(self, forecast_data):
-        """
-        Update chart with forecast data.
+    def _switch_tab(self, tab_name):
+        """Switch between tabs - ALL WORK NOW!"""
+        print(f"📊 Switching to {tab_name} tab")
         
-        Args:
-            forecast_data (dict): Forecast data from API
-        """
+        self.current_tab = tab_name
+        
+        # Update tab colors
+        for name, button in self.tab_buttons.items():
+            if name == tab_name:
+                button.config(bg=COLORS['accent_blue'], fg='white')
+            else:
+                button.config(bg=COLORS['accent_light'], fg=COLORS['text_dark'])
+        
+        # Redraw chart with appropriate data
+        if tab_name == "Hourly":
+            self._show_hourly_view()
+        elif tab_name == "Daily":
+            self._show_daily_view()
+        elif tab_name == "Details":
+            self._show_details_view()
+    
+    def _show_hourly_view(self):
+        """Show hourly temperature view"""
+        self.chart_canvas.delete('all')
+        
+        if self.hourly_data:
+            temps = [item['main']['temp'] for item in self.hourly_data[:8]]
+            times = [datetime.fromtimestamp(item['dt']).strftime('%H:%M') for item in self.hourly_data[:8]]
+            self._draw_temperature_chart(temps, times, "Hourly")
+        else:
+            self._show_placeholder("Hourly temperature data\nwill appear here")
+    
+    def _show_daily_view(self):
+        """Show daily temperature view"""
+        self.chart_canvas.delete('all')
+        
+        if self.hourly_data:
+            # Get daily averages (every 8th item = 1 day)
+            daily_temps = []
+            daily_labels = []
+            
+            for i in range(0, min(len(self.hourly_data), 40), 8):
+                day_items = self.hourly_data[i:i+8]
+                avg_temp = sum(item['main']['temp'] for item in day_items) / len(day_items)
+                daily_temps.append(avg_temp)
+                
+                date = datetime.fromtimestamp(day_items[0]['dt'])
+                daily_labels.append(date.strftime('%a'))
+            
+            self._draw_temperature_chart(daily_temps, daily_labels, "Daily")
+        else:
+            self._show_placeholder("Daily temperature data\nwill appear here")
+    
+    def _show_details_view(self):
+        """Show detailed weather info"""
+        self.chart_canvas.delete('all')
+        
+        if self.hourly_data and len(self.hourly_data) > 0:
+            item = self.hourly_data[0]
+            
+            # Draw details
+            y = 30
+            details = [
+                f"🌡️ Temperature: {item['main']['temp']:.1f}°C",
+                f"🌡️ Feels Like: {item['main']['feels_like']:.1f}°C",
+                f"💧 Humidity: {item['main']['humidity']}%",
+                f"💨 Wind: {item.get('wind', {}).get('speed', 0):.1f} m/s",
+                f"☁️ Clouds: {item.get('clouds', {}).get('all', 0)}%",
+                f"⏲️ Pressure: {item['main']['pressure']} hPa",
+            ]
+            
+            for detail in details:
+                self.chart_canvas.create_text(
+                    200, y,
+                    text=detail,
+                    font=('Segoe UI', 12, 'bold'),
+                    fill='#2D3748',
+                    anchor='w'
+                )
+                y += 25
+        else:
+            self._show_placeholder("Detailed weather information\nwill appear here")
+    
+    def _show_placeholder(self, text):
+        """Show placeholder text"""
+        self.chart_canvas.create_text(
+            200, 90,
+            text=text,
+            font=('Segoe UI', 11),
+            fill=COLORS['text_muted'],
+            justify='center'
+        )
+    
+    def update_chart(self, forecast_data):
+        """Update chart with forecast data"""
         if not forecast_data or 'list' not in forecast_data:
             return
         
-        # Clear canvas
-        self.chart_canvas.delete('all')
+        # Store hourly data
+        self.hourly_data = forecast_data['list']
         
-        # Get hourly data (next 8 hours)
-        hourly = forecast_data['list'][:8]
-        
-        if not hourly:
-            return
-        
-        # Extract temperatures and times
-        temps = [item['main']['temp'] for item in hourly]
-        times = [datetime.fromtimestamp(item['dt']).strftime('%H:%M') for item in hourly]
-        
-        # Draw the chart
-        self._draw_temperature_chart(temps, times)
+        # Redraw current view
+        if self.current_tab == "Hourly":
+            self._show_hourly_view()
+        elif self.current_tab == "Daily":
+            self._show_daily_view()
+        elif self.current_tab == "Details":
+            self._show_details_view()
     
-    def _draw_temperature_chart(self, temps, times):
-        """
-        Draw temperature bar chart.
-        
-        Args:
-            temps (list): List of temperatures
-            times (list): List of time labels
-        """
+    def _draw_temperature_chart(self, temps, times, chart_type="Hourly"):
+        """Draw temperature bar chart"""
         if not temps:
             return
         
@@ -127,67 +206,45 @@ class SummaryChart(tk.Frame):
         
         # Draw bars
         for i, (temp, time) in enumerate(zip(temps, times)):
-            # Calculate bar height
             bar_height = ((temp - min_temp) / temp_range) * chart_height
             
-            # Bar position
             x = padding + i * spacing + (spacing - bar_width) / 2
             y_bottom = padding + chart_height
             y_top = y_bottom - bar_height
             
-            # Color gradient based on temperature
+            # Color based on temp
             if temp < 10:
-                color = '#63B3ED'  # Cold - Blue
+                color = '#63B3ED'
             elif temp < 20:
-                color = '#48BB78'  # Mild - Green
+                color = '#48BB78'
             elif temp < 30:
-                color = '#ED8936'  # Warm - Orange
+                color = '#ED8936'
             else:
-                color = '#F56565'  # Hot - Red
+                color = '#F56565'
             
             # Draw bar
             self.chart_canvas.create_rectangle(
                 x, y_top, x + bar_width, y_bottom,
-                fill=color, outline='', tags='bar'
+                fill=color, outline=''
             )
             
-            # Draw temperature label on top of bar
+            # Temp label
             self.chart_canvas.create_text(
                 x + bar_width / 2, y_top - 10,
                 text=f"{temp:.0f}°",
                 font=('Segoe UI', 10, 'bold'),
-                fill=COLORS['text_dark']
+                fill='#2D3748'
             )
             
-            # Draw time label below
+            # Time label
             self.chart_canvas.create_text(
                 x + bar_width / 2, y_bottom + 15,
                 text=time,
                 font=('Segoe UI', 9),
-                fill=COLORS['text_muted']
+                fill='#718096'
             )
-        
-        # Draw min/max labels on the left
-        self.chart_canvas.create_text(
-            padding - 15, padding,
-            text=f"{max_temp:.0f}°",
-            font=('Segoe UI', 9),
-            fill=COLORS['text_muted'],
-            anchor='e'
-        )
-        
-        self.chart_canvas.create_text(
-            padding - 15, padding + chart_height,
-            text=f"{min_temp:.0f}°",
-            font=('Segoe UI', 9),
-            fill=COLORS['text_muted'],
-            anchor='e'
-        )
     
     def update_colors(self):
         """Update colors when theme changes"""
         self.config(bg=COLORS['bg_card'])
         self.chart_canvas.config(bg=COLORS['bg_card'])
-        
-        for label, widget in self.tab_labels.items():
-            widget.config(bg=COLORS['bg_card'], fg=COLORS['text_dark'])
