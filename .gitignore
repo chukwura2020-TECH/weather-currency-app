@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.pyo
+weacur/
+*.exe
+*spec
+build/
+dist/
+__pycache__/
+*.pyc
+venv/
+venv/
+config.py
+favorites.json
