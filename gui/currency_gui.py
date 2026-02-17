@@ -1,8 +1,7 @@
 # gui/currency_gui.py
 """
 Currency converter interface.
-🐛 FIXED: Converter card now WIDE (700px) and PERFECTLY CENTERED!
-🐛 FIXED: History also WIDE and CENTERED!
+🐛 FIXED: History box now WIDER and CENTERED!
 """
 import csv
 from datetime import datetime
@@ -13,7 +12,7 @@ from gui.styles.theme import COLORS, FONTS
 from api.currency_api import CurrencyAPI
 
 class CurrencyConverter(tk.Frame):
-    """Currency converter view - WIDE AND CENTERED VERSION"""
+    """Currency converter view"""
     
     def __init__(self, parent):
         super().__init__(parent, bg=COLORS['bg_primary'])
@@ -24,7 +23,7 @@ class CurrencyConverter(tk.Frame):
         self._create_widgets()
     
     def _create_widgets(self):
-        """Create WIDE and CENTERED currency converter"""
+        """Create currency converter"""
         
         # Title
         title = tk.Label(
@@ -52,123 +51,120 @@ class CurrencyConverter(tk.Frame):
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
         
-        # ==== CONVERTER CARD - WIDE AND CENTERED! ====
-        # Outer container to center everything
-        converter_outer = tk.Frame(scrollable_frame, bg=COLORS['bg_primary'])
-        converter_outer.pack(fill="both", expand=True, pady=5)
+        # Main converter card - CENTERED!
+        converter_container = tk.Frame(scrollable_frame, bg=COLORS['bg_primary'])
+        converter_container.pack(fill="x", pady=5)
         
-        # WIDE converter card (700px fixed width, centered)
-        converter_card = tk.Frame(converter_outer, bg='#FFFFFF', width=700)
-        converter_card.pack(anchor='center', padx=50)  # CENTERED!
-        converter_card.pack_propagate(False)  # Fixed width
+        converter_card = tk.Frame(converter_container, bg='#FFFFFF')
+        converter_card.pack(padx=100, fill="x")  # CENTERED with padding
         
-        # Inner container with padding
+        # Container
         container = tk.Frame(converter_card, bg='#FFFFFF')
-        container.pack(fill="both", expand=True, padx=40, pady=25)
+        container.pack(fill="x", padx=15, pady=15)
         
-        # --- AMOUNT ---
+        # Amount
         tk.Label(
             container,
             text="Amount:",
             bg='#FFFFFF',
-            fg='#1A202C',  # DARK
-            font=('Segoe UI', 12, 'bold')
-        ).pack(anchor="w", pady=(0, 5))
+            fg='#2D3748',
+            font=('Segoe UI', 11, 'bold')
+        ).pack(anchor="w", pady=(0, 3))
         
         self.amount_entry = tk.Entry(
             container,
             bg='#EDF2F7',
-            fg='#1A202C',  # DARK
-            font=('Segoe UI', 14),
+            fg='#1A202C',
+            font=('Segoe UI', 13),
             bd=1,
             relief="solid"
         )
-        self.amount_entry.pack(fill="x", ipady=8)
+        self.amount_entry.pack(fill="x", ipady=5)
         self.amount_entry.insert(0, "100")
         self.amount_entry.bind('<Return>', lambda e: self._convert())
         
-        # --- FROM CURRENCY ---
+        # From Currency
         tk.Label(
             container,
             text="From:",
             bg='#FFFFFF',
-            fg='#1A202C',  # DARK
-            font=('Segoe UI', 12, 'bold')
-        ).pack(anchor="w", pady=(12, 5))
+            fg='#2D3748',
+            font=('Segoe UI', 11, 'bold')
+        ).pack(anchor="w", pady=(8, 3))
         
         self.from_currency = ttk.Combobox(
             container,
             values=self.api.get_supported_currencies(),
-            font=('Segoe UI', 12),
+            font=('Segoe UI', 11),
             state='readonly'
         )
-        self.from_currency.pack(fill="x", ipady=6)
+        self.from_currency.pack(fill="x", ipady=4)
         self.from_currency.set("USD")
         
-        # --- SWAP BUTTON ---
+        # Swap button
         swap_btn = tk.Button(
             container,
             text="⇅ Swap",
             bg='#4A90E2',
             fg='#FFFFFF',
-            font=('Segoe UI', 11, 'bold'),
+            font=('Segoe UI', 10, 'bold'),
             bd=0,
-            padx=25,
-            pady=8,
+            padx=15,
+            pady=5,
             cursor="hand2",
             command=self._swap_currencies,
             activebackground='#357ABD'
         )
-        swap_btn.pack(pady=8)
+        swap_btn.pack(pady=5)
         
-        # --- TO CURRENCY ---
+        # To Currency
         tk.Label(
             container,
             text="To:",
             bg='#FFFFFF',
-            fg='#1A202C',  # DARK
-            font=('Segoe UI', 12, 'bold')
-        ).pack(anchor="w", pady=(8, 5))
+            fg='#2D3748',
+            font=('Segoe UI', 11, 'bold')
+        ).pack(anchor="w", pady=(5, 3))
         
         self.to_currency = ttk.Combobox(
             container,
             values=self.api.get_supported_currencies(),
-            font=('Segoe UI', 12),
+            font=('Segoe UI', 11),
             state='readonly'
         )
-        self.to_currency.pack(fill="x", ipady=6)
+        self.to_currency.pack(fill="x", ipady=4)
         self.to_currency.set("EUR")
         
-        # --- CONVERT BUTTON (BIG!) ---
+        # Convert button
         convert_btn = tk.Button(
             container,
             text="Convert",
             bg='#48BB78',
             fg='#FFFFFF',
-            font=('Segoe UI', 15, 'bold'),
+            font=('Segoe UI', 13, 'bold'),
             bd=0,
-            padx=40,
-            pady=12,
+            padx=25,
+            pady=8,
             cursor="hand2",
             command=self._convert,
             activebackground='#38A169'
         )
-        convert_btn.pack(pady=15)
+        convert_btn.pack(pady=8)
         
-        # --- RESULT BOX (WIDE!) ---
-        result_box = tk.Frame(container, bg='#EDF2F7', relief='solid', bd=2)
-        result_box.pack(fill="x", pady=10)
+        # Result box
+        result_box = tk.Frame(container, bg='#EDF2F7', relief='solid', bd=1)
+        result_box.pack(fill="x", pady=5)
         
         result_inner = tk.Frame(result_box, bg='#EDF2F7')
-        result_inner.pack(padx=20, pady=15)
+        result_inner.pack(padx=10, pady=10)
         
         self.result_label = tk.Label(
             result_inner,
             text="Enter amount and click Convert",
             bg='#EDF2F7',
-            fg='#1A202C',  # DARK
-            font=('Segoe UI', 16, 'bold'),
-            wraplength=600
+            fg='#2D3748',
+            font=('Segoe UI', 14, 'bold'),
+            wraplength=400
         )
         self.result_label.pack()
         
@@ -176,35 +172,29 @@ class CurrencyConverter(tk.Frame):
             result_inner,
             text="",
             bg='#EDF2F7',
-            fg='#4A5568',  # Medium gray
-            font=('Segoe UI', 11),
-            wraplength=600
+            fg='#4A5568',
+            font=('Segoe UI', 10),
+            wraplength=400
         )
-        self.rate_label.pack(pady=(5, 0))
+        self.rate_label.pack()
         
-        # ==== HISTORY SECTION - WIDE AND CENTERED! ====
-        history_outer = tk.Frame(scrollable_frame, bg=COLORS['bg_primary'])
-        history_outer.pack(fill="both", expand=True, pady=(20, 10))
-        
-        # History header
-        history_header_frame = tk.Frame(history_outer, bg=COLORS['bg_primary'], width=700)
-        history_header_frame.pack(anchor='center', padx=50)
-        history_header_frame.pack_propagate(False)
+        # --- HISTORY SECTION - WIDER AND CENTERED! ---
+        history_header = tk.Frame(scrollable_frame, bg=COLORS['bg_primary'])
+        history_header.pack(fill="x", padx=100, pady=(15, 5))  # CENTERED
         
         tk.Label(
-            history_header_frame,
+            history_header,
             text="📜 Recent Conversions",
             bg=COLORS['bg_primary'],
             fg=COLORS['text_white'],
-            font=('Segoe UI', 15, 'bold')
-        ).pack(pady=10)
+            font=('Segoe UI', 14, 'bold')
+        ).pack(anchor="center")  # CENTERED
         
-        # History container - WIDE (700px)
-        history_container_outer = tk.Frame(history_outer, bg=COLORS['bg_primary'], width=700)
-        history_container_outer.pack(anchor='center', padx=50)
-        history_container_outer.pack_propagate(False)
+        # History container - WIDER!
+        history_outer = tk.Frame(scrollable_frame, bg=COLORS['bg_primary'])
+        history_outer.pack(fill="x", padx=100, pady=(0, 10))  # CENTERED with 100px padding
         
-        self.history_container = tk.Frame(history_container_outer, bg=COLORS['bg_primary'])
+        self.history_container = tk.Frame(history_outer, bg=COLORS['bg_primary'])
         self.history_container.pack(fill="both", expand=True)
         
         # Initial empty message
@@ -213,10 +203,10 @@ class CurrencyConverter(tk.Frame):
             text="No conversions yet\nStart converting to see history!",
             bg=COLORS['bg_primary'],
             fg=COLORS['text_white'],
-            font=('Segoe UI', 12),
+            font=('Segoe UI', 11),
             justify="center"
         )
-        self.empty_label.pack(pady=25)
+        self.empty_label.pack(pady=20)
     
     def _swap_currencies(self):
         """Swap currencies"""
@@ -256,10 +246,10 @@ class CurrencyConverter(tk.Frame):
             if result:
                 self.result_label.config(
                     text=f"✅ {result['converted']:,.2f} {result['to_currency']}",
-                    fg='#48BB78'  # Green
+                    fg='#48BB78'
                 )
                 self.rate_label.config(
-                    text=f"Exchange Rate: 1 {from_curr} = {result['rate']:.4f} {to_curr}",
+                    text=f"Rate: 1 {from_curr} = {result['rate']:.4f} {to_curr}",
                     fg='#4A5568'
                 )
                 
@@ -277,42 +267,42 @@ class CurrencyConverter(tk.Frame):
             self.rate_label.config(text=str(e), fg='#E53E3E')
     
     def _add_to_history(self, conversion_data):
-        """Add to history - WIDE boxes!"""
+        """Add to history - WIDER boxes!"""
         if self.empty_label.winfo_exists():
             self.empty_label.destroy()
         
-        # History item - WIDE!
+        # History item - WIDER!
         item = tk.Frame(self.history_container, bg='#FFFFFF', relief='solid', bd=1)
-        item.pack(fill="x", pady=5)
+        item.pack(fill="x", pady=3)
         
         content = tk.Frame(item, bg='#FFFFFF')
-        content.pack(fill="x", padx=25, pady=15)
+        content.pack(fill="x", padx=15, pady=10)  # More padding
         
-        # From amount
+        # From
         tk.Label(
             content,
-            text=f"{conversion_data['amount']:,.2f} {conversion_data['from_currency']}",
+            text=f"{conversion_data['amount']} {conversion_data['from_currency']}",
             bg='#FFFFFF',
-            fg='#1A202C',  # DARK
-            font=('Segoe UI', 13, 'bold')
+            fg='#2D3748',
+            font=('Segoe UI', 12, 'bold')  # Larger font
         ).pack(anchor="w")
         
         # Arrow
         tk.Label(
             content,
-            text="⬇",
+            text="↓",
             bg='#FFFFFF',
             fg='#4A5568',
-            font=('Segoe UI', 14)
-        ).pack(anchor="w", pady=3)
+            font=('Segoe UI', 12)
+        ).pack(anchor="w")
         
-        # To amount
+        # To
         tk.Label(
             content,
             text=f"{conversion_data['converted']:,.2f} {conversion_data['to_currency']}",
             bg='#FFFFFF',
-            fg='#48BB78',  # Green
-            font=('Segoe UI', 15, 'bold')
+            fg='#48BB78',
+            font=('Segoe UI', 14, 'bold')  # Larger font
         ).pack(anchor="w")
         
         # Rate
@@ -322,7 +312,7 @@ class CurrencyConverter(tk.Frame):
             bg='#FFFFFF',
             fg='#718096',
             font=('Segoe UI', 10)
-        ).pack(anchor="w", pady=(8, 0))
+        ).pack(anchor="w", pady=(5, 0))
         
         # Keep only last 5
         children = self.history_container.winfo_children()
