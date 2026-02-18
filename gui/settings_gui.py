@@ -1,19 +1,42 @@
 # gui/settings_gui.py
 """
 Settings page with actual functionality!
+🐛 FIXED: Temperature unit selector now works!
 """
 import tkinter as tk
 from tkinter import ttk, messagebox
 from gui.styles.theme import COLORS, FONTS, DIMENSIONS, is_dark_mode
 from utils.favorites import load_favorites, clear_favorites
 import json
+import os
+
+# File to persist the temperature unit preference
+SETTINGS_FILE = 'settings.json'
+
+def load_settings():
+    """Load saved settings from file"""
+    try:
+        if os.path.exists(SETTINGS_FILE):
+            with open(SETTINGS_FILE, 'r') as f:
+                return json.load(f)
+    except Exception:
+        pass
+    return {"temp_unit": "Celsius"}  # Default
+
+def save_settings(settings):
+    """Save settings to file"""
+    try:
+        with open(SETTINGS_FILE, 'w') as f:
+            json.dump(settings, f, indent=2)
+    except Exception as e:
+        print(f"Failed to save settings: {e}")
 
 class SettingsPage(tk.Frame):
     """Settings and preferences page"""
     
     def __init__(self, parent):
         super().__init__(parent, bg=COLORS['bg_primary'])
-        
+        self.settings = load_settings()
         self._create_widgets()
     
     def _create_widgets(self):
@@ -91,9 +114,10 @@ class SettingsPage(tk.Frame):
             fg=COLORS['text_dark'],
             font=FONTS['body_bold']
         ).pack(anchor="w", pady=(0, 10))
-        
-        self.temp_unit = tk.StringVar(value="Celsius")
-        
+
+        # Load saved preference
+        self.temp_unit = tk.StringVar(value=self.settings.get("temp_unit", "Celsius"))
+
         for unit in ["Celsius", "Fahrenheit"]:
             rb = tk.Radiobutton(
                 unit_frame,
@@ -104,9 +128,20 @@ class SettingsPage(tk.Frame):
                 fg=COLORS['text_dark'],
                 font=FONTS['body'],
                 selectcolor='#E8F4FD',
-                activebackground='white'
+                activebackground='white',
+                command=self._on_unit_change  # ✅ Fires when selection changes
             )
             rb.pack(anchor="w", pady=2)
+
+        # Live feedback label
+        self.unit_feedback = tk.Label(
+            unit_frame,
+            text=f"✅ Currently set to: {self.temp_unit.get()}",
+            bg='white',
+            fg='#48BB78',
+            font=FONTS['small']
+        )
+        self.unit_feedback.pack(anchor="w", pady=(8, 0))
         
         # SECTION 3: Favorites Management
         self._create_section(content, "⭐ Favorites Management")
@@ -205,7 +240,18 @@ Powered by:
             activebackground='#CBD5E0'
         )
         reset_btn.pack(anchor="w")
-    
+
+    def _on_unit_change(self):
+        """Called when temperature unit radio button is changed"""
+        selected = self.temp_unit.get()
+
+        # Update feedback label
+        self.unit_feedback.config(text=f"✅ Currently set to: {selected}")
+
+        # Save preference to file
+        self.settings["temp_unit"] = selected
+        save_settings(self.settings)
+
     def _create_section(self, parent, title):
         """Create a section header"""
         section_frame = tk.Frame(parent, bg='white')
@@ -253,6 +299,11 @@ Powered by:
                 # Clear favorites.json
                 with open('favorites.json', 'w') as f:
                     json.dump([], f)
+
+                # Reset settings
+                save_settings({"temp_unit": "Celsius"})
+                self.temp_unit.set("Celsius")
+                self.unit_feedback.config(text="✅ Currently set to: Celsius")
                 
                 messagebox.showinfo("Success", "App has been reset to defaults!")
             except Exception as e:
@@ -261,4 +312,3 @@ Powered by:
     def update_colors(self):
         """Update colors when theme changes"""
         self.config(bg=COLORS['bg_primary'])
-        # Would need to recursively update all children
