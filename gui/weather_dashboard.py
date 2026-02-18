@@ -1,7 +1,7 @@
 # gui/weather_dashboard.py
 """
 Weather dashboard view with all weather components.
-🐛 FIXED: No more lag! Removed loading overlay delays!
+🐛 FIXED: MOUSEWHEEL SCROLLING works now!
 """
 import tkinter as tk
 from tkinter import ttk
@@ -23,21 +23,20 @@ class WeatherDashboard(tk.Frame):
         
         self._create_layout()
         
-        # Load initial data WITHOUT blocking UI
+        # Load initial data
         self.after(50, self._initial_load)
     
     def _initial_load(self):
-        """Load initial weather data - NO LOADING OVERLAY!"""
+        """Load initial weather data"""
         try:
-            # Get weather data
             weather_data = self.api.get_current_weather(self.current_city)
             
             if weather_data:
-                # Update alert banner with real data
+                # Update alert banner
                 if hasattr(self.master.master, 'alert_banner'):
                     self.master.master.alert_banner.check_weather_alerts(weather_data)
                 
-                # Update map with coordinates
+                # Update map
                 if weather_data.get('coord') and hasattr(self, 'map'):
                     lat = weather_data['coord']['lat']
                     lon = weather_data['coord']['lon']
@@ -51,7 +50,7 @@ class WeatherDashboard(tk.Frame):
             print(f"Initial load error: {e}")
     
     def _create_layout(self):
-        """Create the weather dashboard layout"""
+        """Create the weather dashboard layout WITH MOUSEWHEEL SCROLLING!"""
         
         # Create canvas for scrolling
         canvas = tk.Canvas(self, bg=COLORS['bg_primary'], highlightthickness=0)
@@ -65,6 +64,23 @@ class WeatherDashboard(tk.Frame):
         
         canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
         canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # 🐛 FIX: MOUSEWHEEL SCROLLING!
+        def _on_mousewheel(event):
+            """Handle mousewheel scrolling"""
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        
+        def _on_mousewheel_linux(event):
+            """Handle mousewheel on Linux"""
+            if event.num == 4:
+                canvas.yview_scroll(-1, "units")
+            elif event.num == 5:
+                canvas.yview_scroll(1, "units")
+        
+        # Bind mousewheel events
+        canvas.bind_all("<MouseWheel>", _on_mousewheel)  # Windows/Mac
+        canvas.bind_all("<Button-4>", _on_mousewheel_linux)  # Linux scroll up
+        canvas.bind_all("<Button-5>", _on_mousewheel_linux)  # Linux scroll down
         
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
@@ -106,15 +122,12 @@ class WeatherDashboard(tk.Frame):
         self.forecast.pack(fill="both", expand=True)
     
     def on_search(self, city):
-        """
-        Called when user searches for a city
-        🐛 FIXED: NO loading overlay = NO lag!
-        """
+        """Called when user searches for a city"""
         print(f"Updating weather for: {city}")
         
         self.current_city = city
         
-        # Update components directly (no loading overlay blocking!)
+        # Update components
         try:
             # Update the weather card
             self.weather_card.update_weather(city)
