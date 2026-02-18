@@ -2,6 +2,7 @@
 """
 Settings page with actual functionality!
 🐛 FIXED: Temperature unit selector now works!
+✨ ADDED: Mouse wheel scrolling support
 """
 import tkinter as tk
 from tkinter import ttk, messagebox
@@ -69,6 +70,22 @@ class SettingsPage(tk.Frame):
         canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
         canvas.configure(yscrollcommand=scrollbar.set)
         
+        # ✨ ADD MOUSE WHEEL SCROLLING - Windows & Linux
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        
+        # ✨ ADD MOUSE WHEEL SCROLLING - MacOS
+        def _on_mousewheel_mac(event):
+            canvas.yview_scroll(int(-1*event.delta), "units")
+        
+        # Bind mouse wheel events
+        canvas.bind_all("<MouseWheel>", _on_mousewheel)  # Windows/Linux
+        canvas.bind_all("<Button-4>", lambda e: canvas.yview_scroll(-1, "units"))  # Linux scroll up
+        canvas.bind_all("<Button-5>", lambda e: canvas.yview_scroll(1, "units"))   # Linux scroll down
+        
+        # Store canvas reference for cleanup
+        self.canvas = canvas
+        
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
         
@@ -129,7 +146,7 @@ class SettingsPage(tk.Frame):
                 font=FONTS['body'],
                 selectcolor='#E8F4FD',
                 activebackground='white',
-                command=self._on_unit_change  # ✅ Fires when selection changes
+                command=self._on_unit_change
             )
             rb.pack(anchor="w", pady=2)
 
@@ -202,8 +219,8 @@ Features:
 ✅ Favorite cities
 
 Powered by:
-• OpenWeatherMap API
-• ExchangeRate-API
+- OpenWeatherMap API
+- ExchangeRate-API
         """
         
         tk.Label(
@@ -308,6 +325,14 @@ Powered by:
                 messagebox.showinfo("Success", "App has been reset to defaults!")
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to reset: {e}")
+    
+    def destroy(self):
+        """Clean up mouse wheel bindings when widget is destroyed"""
+        if hasattr(self, 'canvas'):
+            self.canvas.unbind_all("<MouseWheel>")
+            self.canvas.unbind_all("<Button-4>")
+            self.canvas.unbind_all("<Button-5>")
+        super().destroy()
     
     def update_colors(self):
         """Update colors when theme changes"""
