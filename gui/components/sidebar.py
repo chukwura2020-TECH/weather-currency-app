@@ -1,91 +1,83 @@
 # gui/components/sidebar.py
-"""
-Navigation sidebar component.
-🐛 FIXED: Icons aligned WITHOUT pushing everything up!
-"""
+
 import tkinter as tk
-from gui.styles.theme import COLORS, FONTS
+import os
+from gui.styles.theme import COLORS
+from gui.utils.icon_loader import load_icon
+
 
 class Sidebar(tk.Frame):
-    """Left sidebar with navigation icons"""
-    
+    """Production-ready sidebar using PNG icons"""
+
     def __init__(self, parent, on_navigate):
-        super().__init__(parent, bg=COLORS['bg_primary'], width=80)
-        
+        super().__init__(parent, bg=COLORS['bg_primary'], width=90)
+
         self.on_navigate = on_navigate
         self.pack_propagate(False)
-        
+
+        # Prevent image garbage collection
+        self.icons = {}
+
         self._create_widgets()
-    
+
     def _create_widgets(self):
-        """Create sidebar navigation buttons - ALL ALIGNED with pack!"""
-        
-        # Logo/Title area
+
+        # ================= Logo =================
         logo_frame = tk.Frame(self, bg=COLORS['bg_primary'])
-        logo_frame.pack(pady=30)
-        
+        logo_frame.pack(pady=25)
+
+        logo_icon = load_icon(
+            os.path.join("assets/icons", "cloud.png"),
+            size=50,
+            color="#ffffff"
+        )
+
+        self.icons["logo"] = logo_icon
+
         tk.Label(
             logo_frame,
-            text="⛅",
-            bg=COLORS['bg_primary'],
-            font=('Segoe UI', 32)
+            image=logo_icon,
+            bg=COLORS['bg_primary']
         ).pack()
-        
-        # Navigation buttons container
+
+        # ================= Navigation =================
         nav_container = tk.Frame(self, bg=COLORS['bg_primary'])
-        nav_container.pack(pady=10)
-        
-        # Navigation buttons - ALL USE EXACT SAME LAYOUT!
+        nav_container.pack(fill="x", expand=True)
+
         nav_items = [
-            ("🌤️", "weather", "Weather"),
-            ("💱", "currency", "Currency"),
-            ("⚙️", "settings", "Settings"),
+            ("cloud.png", "weather"),
+            ("money.png", "currency"),
+            ("gear.png", "settings"),
         ]
-        
-        for icon, view, tooltip in nav_items:
-            self._create_nav_button(nav_container, icon, view, tooltip)
-    
-    def _create_nav_button(self, parent, icon, view, tooltip):
-        """
-        Create a single navigation button.
-        ALL buttons use IDENTICAL pack parameters!
-        """
-        
-        # Button frame - SAME for ALL
-        btn_frame = tk.Frame(parent, bg=COLORS['bg_primary'])
-        btn_frame.pack(pady=10)  # SAME spacing for ALL
-        
-        # Button label - SAME for ALL
-        btn = tk.Label(
-            btn_frame,
-            text=icon,
-            bg=COLORS['bg_primary'],
-            font=('Segoe UI', 28),  # SAME font for ALL
-            cursor="hand2",
-            width=3  # SAME width for ALL - keeps them aligned!
+
+        for icon_file, view in nav_items:
+            self._create_nav_button(nav_container, icon_file, view)
+
+    def _create_nav_button(self, parent, icon_file, view):
+
+        container = tk.Frame(parent, bg=COLORS['bg_primary'], height=70)
+        container.pack(fill="x")
+        container.pack_propagate(False)
+
+        icon_path = os.path.join("assets/icons", icon_file)
+
+        icon = load_icon(
+            icon_path,
+            size=35,
+            color="#ffffff"
         )
-        btn.pack()  # Simple pack, no fancy parameters
-        
-        # Hover effect
-        btn.bind('<Enter>', lambda e: btn.config(bg=COLORS['accent_blue']))
-        btn.bind('<Leave>', lambda e: btn.config(bg=COLORS['bg_primary']))
-        
-        # Click handler
-        btn.bind('<Button-1>', lambda e: self.on_navigate(view))
-    
-    def update_colors(self):
-        """Update colors when theme changes"""
-        self.config(bg=COLORS['bg_primary'])
-        for child in self.winfo_children():
-            self._update_child_colors(child)
-    
-    def _update_child_colors(self, widget):
-        """Update colors recursively"""
-        try:
-            if isinstance(widget, (tk.Frame, tk.Label)):
-                widget.config(bg=COLORS['bg_primary'])
-            
-            for child in widget.winfo_children():
-                self._update_child_colors(child)
-        except:
-            pass
+
+        self.icons[view] = icon
+
+        btn = tk.Label(
+            container,
+            image=icon,
+            bg=COLORS['bg_primary'],
+            cursor="hand2"
+        )
+
+        btn.place(relx=0.5, rely=0.5, anchor="center")
+
+        btn.bind("<Enter>", lambda e: btn.config(bg=COLORS['accent_blue']))
+        btn.bind("<Leave>", lambda e: btn.config(bg=COLORS['bg_primary']))
+        btn.bind("<Button-1>", lambda e: self.on_navigate(view))
